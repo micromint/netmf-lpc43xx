@@ -1,0 +1,44 @@
+-DARM_V3_1
+-DMDK_V3_1
+-DCOMPILE_THUMB2
+-DLITTLE_ENDIAN
+-DPLATFORM_ARM_Bambino200
+-DPLATFORM_NO_CLR_TRACE=1
+-DTARGETLOCATION_FLASH
+-DVERSION_MAJOR=4
+-DVERSION_MINOR=2
+-DVERSION_BUILD=0
+-DVERSION_REVISION=2
+-DTINYCLR_ENABLE_SOURCELEVELDEBUGGING
+-DTINYCLR_NO_IL_INLINE=1
+-DHAL_REDUCESIZE
+-DDEBUG
+-I.
+-IC:\Keil\ARM\ARMCC\INC
+-I..\..\..\..\Solutions\Bambino200
+-I..\..\..\..\DeviceCode
+-I..\..\..\..\DeviceCode\Include
+-I..\..\..\..\DeviceCode\Cores\arm
+-I..\..\..\..\DeviceCode\Cores\arm\Include
+-I..\..\..\..\DeviceCode\Targets\Native\LPC43XX
+-I..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode
+-I..\..\..\..\DeviceCode\pal\PKCS11
+-I..\..\..\..\DeviceCode\pal\rtip
+-I..\..\..\..\DeviceCode\pal\rtip\rtpcore
+-I..\..\..\..\devicecode\pal\rtip\tinyclr
+-I..\..\..\..\CLR\Core
+-I..\..\..\..\CLR\Include
+-I..\..\..\..\CLR\Libraries\CorLib
+-I..\..\..\..\CLR\Libraries\SecurityPkcs11
+-I..\..\..\..\CLR\Libraries\SPOT
+-I..\..\..\..\CLR\Libraries\SPOT_Hardware
+-I..\..\..\..\CLR\Libraries\SPOT_Graphics
+-I..\..\..\..\CLR\Libraries\SPOT_Net
+-I..\..\..\..\CLR\Libraries\SPOT_Net_Security
+-I..\..\..\..\CLR\Libraries\System_Xml
+-I..\..\..\..\Crypto\inc
+-I..\..\..\..\Support\Include
+--fpu softvfp
+--no_autoinline
+--diag_suppress 66,111,161,230,550,1293,2874,3011
+-DOEMSYSTEMINFOSTRING="\"Bambino 200 Copyright (C) Micromint USA LLC.\""

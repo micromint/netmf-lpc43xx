@@ -1,0 +1,75 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AssemblyName>TinyHal_loader_Cortex</AssemblyName>
+    <ProjectGuid>{E7C17F2D-7972-4523-8C74-A03D436B59B8}</ProjectGuid>
+    <Size>
+    </Size>
+    <Description>Cortex-M3 HAL library (for boot loaders)</Description>
+    <Level>HAL</Level>
+    <LibraryFile>TinyHal_loader_Cortex.$(LIB_EXT)</LibraryFile>
+    <ProjectPath>$(SPOCLIENT)\DeviceCode\Targets\Native\LPC43XX\DeviceCode\CortexMX\TinyHal\dotNetMF_loader.proj</ProjectPath>
+    <ManifestFile>TinyHal_loader_Cortex.$(LIB_EXT).manifest</ManifestFile>
+    <Groups>Processor\LPC43XX</Groups>
+    <LibraryCategory>
+      <MFComponent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="TinyHal_HAL_Cortex" Guid="{92F27B42-ED35-442E-8A9E-32E5653557AD}" ProjectPath="" Conditional="" xmlns="">
+        <VersionDependency xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">
+          <Major>4</Major>
+          <Minor>0</Minor>
+          <Revision>0</Revision>
+          <Build>0</Build>
+          <Extra />
+          <Date>2009-04-30</Date>
+        </VersionDependency>
+        <ComponentType xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">LibraryCategory</ComponentType>
+      </MFComponent>
+    </LibraryCategory>
+	<ProcessorSpecific>
+		<MFComponent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="LPC43XX" Guid="{EA63CACD-CCCD-45EF-AAD2-E14908C3CB64}" xmlns="">
+        <VersionDependency xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">
+          <Major>4</Major>
+          <Minor>0</Minor>
+          <Revision>0</Revision>
+          <Build>0</Build>
+          <Extra />
+          <Date>2009-04-30</Date>
+          <Author>Oberon microsystems, Inc.</Author>
+        </VersionDependency>
+        <ComponentType xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">Processor</ComponentType>
+		</MFComponent>
+	</ProcessorSpecific>
+    <Documentation>
+    </Documentation>
+    <PlatformIndependent>False</PlatformIndependent>
+    <CustomFilter>
+    </CustomFilter>
+    <Required>False</Required>
+    <IgnoreDefaultLibPath>False</IgnoreDefaultLibPath>
+    <IsStub>False</IsStub>
+    <Directory>DeviceCode\Targets\Native\LPC43XX\DeviceCode\CortexMX\TinyHal\reducesize</Directory>
+    <reducesize>true</reducesize>
+    <PlatformIndependentBuild>false</PlatformIndependentBuild>
+    <Version>4.0.0.0</Version>
+  </PropertyGroup>
+  <Import Project="$(SPOCLIENT)\tools\targets\Microsoft.SPOT.System.Settings" />
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyName>TinyHal_loader_Cortex</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <HFiles Include="$(SPOCLIENT)\DeviceCode\Initialization\MasterConfig.h"/>
+    <Compile Include="Aborts.cpp"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(OS_PLATFORM)'!='true'">
+	<Compile Include="$(AS_SUBDIR)\FirstEntry.s" />
+	<Compile Include="$(AS_SUBDIR)\IDelayLoop.s" />
+	<Compile Include="$(AS_SUBDIR)\VectorsHandlers.s" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(OS_PLATFORM)'!='true'">
+    <LIB_FIRSTENTRY_OBJ Include="$(OBJ_DIR)\FirstEntry.$(OBJ_EXT)"/>
+  </ItemGroup>
+
+  <Import Project="$(SPOCLIENT)\tools\targets\Microsoft.SPOT.System.Targets" />
+</Project>

@@ -1,0 +1,41 @@
+LR_FLASH 0x14000000 ABSOLUTE 0x0000C000
+{
+    ER_FLASH 0x14000000 FIXED 
+    {
+        FirstEntry.o (+RO, +FIRST)
+        * (SectionForBootstrapOperations)
+        * (+RO-CODE)
+        * (+RO-DATA)
+    }
+    ER_RAM_RO 0x10000118 ABSOLUTE 
+    {
+    }
+    ER_RAM_RW +0 ABSOLUTE 
+    {
+        * (+RW-DATA, +ZI)
+    }
+    ER_CUSTOM_HEAP_BEGIN 0x10015E00 ABSOLUTE UNINIT
+    {
+        * (SectionForCustomHeapBegin)
+    }
+    ER_CUSTOM_HEAP_END 0x10015FF8 ABSOLUTE UNINIT
+    {
+        * (SectionForCustomHeapEnd)
+    }
+    ER_HEAP_BEGIN 0x10016000 ABSOLUTE UNINIT
+    {
+        * (SectionForHeapBegin)
+    }
+    ER_HEAP_END 0x1001DFF8 ABSOLUTE UNINIT
+    {
+        * (SectionForHeapEnd)
+    }
+    ER_STACK_BOTTOM 0x1001E000 ABSOLUTE UNINIT
+    {
+        * (SectionForStackBottom)
+    }
+    ER_STACK_TOP 0x1001FFF8 ABSOLUTE UNINIT
+    {
+        * (SectionForStackTop)
+    }
+}

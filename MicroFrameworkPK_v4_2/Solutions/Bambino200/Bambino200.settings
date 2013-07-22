@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Author>Micromint USA</Author>
+    <Description>Solution for Micromint Bambino 200</Description>
+    <Documentation />
+    <PlatformGuid>{1ba46915-f980-455c-a890-97ec889c8378}</PlatformGuid>
+    <INSTRUCTION_SET>THUMB2</INSTRUCTION_SET>
+    <TARGETPLATFORM>Bambino200</TARGETPLATFORM>
+    <PLATFORM>Bambino200</PLATFORM>
+    <IsSolutionWizardVisible>True</IsSolutionWizardVisible>
+	<ENDIANNESS>le</ENDIANNESS>
+    <NO_BOOTLOADER_COMPRESSION>true</NO_BOOTLOADER_COMPRESSION>
+  </PropertyGroup>
+  <ItemGroup>
+    <TinyCLR_Defines Include="PLATFORM_NO_CLR_TRACE=1" />
+    <TinyCLR_Defines Include="TINYCLR_NO_IL_INLINE=1" />
+  </ItemGroup>   
+  <ItemGroup>
+    <IncludePaths Include="Solutions\Bambino200" />
+  </ItemGroup>
+  <Import Project="$(SPOCLIENT)\devicecode\Targets\Native\LPC43XX\LPC43XX.settings" />
+</Project>

@@ -1,0 +1,11 @@
+--fpu softvfp
+--thumb
+--pd "COMPILE_THUMB2 SETS \"1\""
+--pd "HAL_REDUCESIZE SETS \"0\""
+--pd "TargetLocation SETS \"FLASH\""
+--pd "TargetType SETS \"release\""
+--pd "TargetModel SETS \"Bambino200\""
+--pd "TargetPlatformName SETS \"PLATFORM_ARM_Bambino200\""
+--pd "CompilerVersion SETS \"MDK4.71\""
+--pd "TargetPlatformProcessor SETS \"PLATFORM_ARM_LPC43XX\""
+--pd "BUILD_RTM SETS \"0\""

@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectPath>$(SPOCLIENT)\Solutions\Test\DeviceCode\BlockStorage_HAL\dotNetMF.proj</ProjectPath>
+    <AssemblyName>LPC43XX_BlConfig_Bambino200</AssemblyName>
+    <Size>
+    </Size>
+    <ProjectGuid>{509DEF7D-8039-4F03-A093-533FA635C1A3}</ProjectGuid>
+    <Description>Block storage configuration for Bambino200</Description>
+    <Level>HAL</Level>
+    <LibraryFile>LPC43XX_BlConfig_Bambino200.$(LIB_EXT)</LibraryFile>
+    <ManifestFile>LPC43XX_BlConfig_Bambino200.$(LIB_EXT).manifest</ManifestFile>
+    <Groups>BlockStorage</Groups>
+
+    <IsSolutionWizardVisible>True</IsSolutionWizardVisible>
+    <HasLibraryCategory>True</HasLibraryCategory>
+    <LibraryCategory>
+      <MFComponent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="BlockStorage_HAL" Guid="{B87F1565-3D64-4531-A84B-2F9C2B221D1E}" ProjectPath="$(SPOCLIENT)\Framework\Features\BlockStorage_HAL.libcatproj" Conditional="" xmlns="">
+        <VersionDependency xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">
+          <Major>4</Major>
+          <Minor>0</Minor>
+          <Revision>0</Revision>
+          <Build>0</Build>
+          <Extra />
+          <Date>2013-04-15</Date>
+          <Author>Micromint USA</Author>
+        </VersionDependency>
+        <ComponentType xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">LibraryCategory</ComponentType>
+      </MFComponent>
+    </LibraryCategory>
+    <Documentation>
+    </Documentation>
+    <PlatformIndependent>False</PlatformIndependent>
+    <CustomFilter>
+    </CustomFilter>
+    <Required>False</Required>
+    <IgnoreDefaultLibPath>False</IgnoreDefaultLibPath>
+    <IsStub>false</IsStub>
+    <Directory>Solutions\Bambino200\DeviceCode\BlockStorage\LPC43XX</Directory>
+    <OutputType>Library</OutputType>
+    <PlatformIndependentBuild>false</PlatformIndependentBuild>
+    <Version>4.0.0.0</Version>
+  </PropertyGroup>
+  <Import Project="$(SPOCLIENT)\tools\targets\Microsoft.SPOT.System.Settings" />
+  <PropertyGroup />
+  <ItemGroup>
+    <Compile Include="LPC43XX_BlConfig.cpp" />
+  </ItemGroup>
+
+  <Import Project="$(SPOCLIENT)\tools\targets\Microsoft.SPOT.System.Targets" />
+</Project>

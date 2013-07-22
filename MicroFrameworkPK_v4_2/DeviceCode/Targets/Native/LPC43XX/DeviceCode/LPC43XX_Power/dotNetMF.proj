@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AssemblyName>LPC43XX_Power</AssemblyName>
+    <ProjectGuid>{7644C5FC-FD36-49D5-A64E-AEBE0C43C465}</ProjectGuid>
+    <Size>
+    </Size>
+    <Description>LPC43XX Power Driver</Description>
+    <Level>HAL</Level>
+    <LibraryFile>LPC43XX_Power.$(LIB_EXT)</LibraryFile>
+    <ProjectPath>$(SPOCLIENT)\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_Power\dotNetMF.proj</ProjectPath>
+    <ManifestFile>LPC43XX_Power.$(LIB_EXT).manifest</ManifestFile>
+    <Groups>Processor\LPC43XX</Groups>
+    <Documentation>
+    </Documentation>
+    <PlatformIndependent>False</PlatformIndependent>
+    <CustomFilter>
+    </CustomFilter>
+    <Required>False</Required>
+    <IgnoreDefaultLibPath>False</IgnoreDefaultLibPath>
+    <IsStub>False</IsStub>
+    <IsSolutionWizardVisible>True</IsSolutionWizardVisible>
+    <HasLibraryCategory>True</HasLibraryCategory>
+    <LibraryCategory>
+      <MFComponent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="Power_HAL" Guid="{9FF2AE69-79CF-4C0B-8732-F813272EC8C5}" ProjectPath="" Conditional="" xmlns="">
+        <VersionDependency xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">
+          <Major>4</Major>
+          <Minor>0</Minor>
+          <Revision>0</Revision>
+          <Build>0</Build>
+          <Extra />
+          <Date>2013-04-15</Date>
+          <Author>Micromint USA</Author>
+        </VersionDependency>
+        <ComponentType xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">LibraryCategory</ComponentType>
+      </MFComponent>
+    </LibraryCategory>
+	<ProcessorSpecific>  
+		<MFComponent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="LPC43XX" Guid="{007400A6-0088-008A-A158-3C166CD3322C}" xmlns="">
+        <VersionDependency xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">
+          <Major>4</Major>
+          <Minor>0</Minor>
+          <Revision>0</Revision>
+          <Build>0</Build>
+          <Extra />
+          <Date>2013-04-15</Date>
+          <Author>Micromint USA</Author>
+        </VersionDependency>
+        <ComponentType xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">Processor</ComponentType>
+      </MFComponent>
+    </ProcessorSpecific>
+    <Directory>DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_Power</Directory>
+    <OutputType>Library</OutputType>
+    <PlatformIndependentBuild>false</PlatformIndependentBuild>
+    <Version>4.0.0.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ARMBUILD_ONLY>true</ARMBUILD_ONLY>
+  </PropertyGroup>
+  
+  <Import Project="$(SPOCLIENT)\tools\targets\Microsoft.SPOT.System.Settings" />
+  <PropertyGroup />
+  <ItemGroup>
+    <HFiles Include="..\LPC43XXxx.h" />
+    <Compile Include="LPC43XX_Power.cpp" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(SPOCLIENT)\tools\targets\Microsoft.SPOT.System.Targets" />
+</Project>

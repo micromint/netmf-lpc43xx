@@ -1,0 +1,27 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <Directory>DeviceCode\Targets\Native\LPC43XX\DeviceCode</Directory>
+  </PropertyGroup>
+
+  <Import Project="$(SPOCLIENT)\tools\targets\Microsoft.SPOT.System.Settings" />
+  <PropertyGroup>
+    <OutputType >Library</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <SubDirectories Include="LPC43XX_AD"/>
+    <SubDirectories Include="LPC43XX_Bootstrap"/>
+    <SubDirectories Include="LPC43XX_DA"/>
+    <SubDirectories Include="LPC43XX_GPIO"/>
+    <SubDirectories Include="LPC43XX_I2C"/>
+    <SubDirectories Include="LPC43XX_INTC"/>
+    <SubDirectories Include="LPC43XX_Power"/>
+    <SubDirectories Include="LPC43XX_PWC"/>
+    <SubDirectories Include="LPC43XX_SPI"/>
+    <SubDirectories Include="LPC43XX_SPIFI"/>
+    <SubDirectories Include="LPC43XX_Time"/>
+    <SubDirectories Include="LPC43XX_USART"/>
+    <SubDirectories Include="LPC43XX_USB"/>
+  </ItemGroup>
+  <Import Project="$(SPOCLIENT)\tools\targets\Microsoft.SPOT.System.Targets" />
+</Project>

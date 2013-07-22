@@ -1,0 +1,75 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AssemblyName>TinyHal_Cortex</AssemblyName>
+    <ProjectGuid>{FE851471-2EDC-4237-BDDE-B2292BB9730F}</ProjectGuid>
+    <Size>
+    </Size>
+    <Description>Cortex-M3 HAL library</Description>
+    <Level>HAL</Level>
+    <LibraryFile>TinyHal_Cortex.$(LIB_EXT)</LibraryFile>
+    <ProjectPath>$(SPOCLIENT)\DeviceCode\Targets\Native\LPC43XX\DeviceCode\CortexMX\TinyHal\dotNetMF.proj</ProjectPath>
+    <ManifestFile>TinyHal_Cortex.$(LIB_EXT).manifest</ManifestFile>
+    <Groups>Processor\LPC43XX</Groups>
+    <LibraryCategory>
+      <MFComponent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="TinyHal_HAL_Cortex" Guid="{8FC33D9F-A206-44DE-87C7-74B479286106}" ProjectPath="" Conditional="" xmlns="">
+        <VersionDependency xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">
+          <Major>4</Major>
+          <Minor>0</Minor>
+          <Revision>0</Revision>
+          <Build>0</Build>
+          <Extra />
+          <Date>2009-04-30</Date>
+        </VersionDependency>
+        <ComponentType xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">LibraryCategory</ComponentType>
+      </MFComponent>
+    </LibraryCategory>
+	<ProcessorSpecific>
+		<MFComponent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="LPC43XX" Guid="{C4B2A057-20DE-4BB4-8654-C6B9E953DBFC}" xmlns="">
+        <VersionDependency xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">
+          <Major>4</Major>
+          <Minor>0</Minor>
+          <Revision>0</Revision>
+          <Build>0</Build>
+          <Extra />
+          <Date>2009-04-30</Date>
+          <Author>Oberon microsystems, Inc.</Author>
+        </VersionDependency>
+        <ComponentType xmlns="http://schemas.microsoft.com/netmf/InventoryFormat.xsd">Processor</ComponentType>
+		</MFComponent>
+	</ProcessorSpecific>
+    <Documentation>
+    </Documentation>
+    <PlatformIndependent>False</PlatformIndependent>
+    <CustomFilter>
+    </CustomFilter>
+    <Required>False</Required>
+    <IgnoreDefaultLibPath>False</IgnoreDefaultLibPath>
+    <IsStub>False</IsStub>
+    <Directory>DeviceCode\Targets\Native\LPC43XX\DeviceCode\CortexMX\TinyHal</Directory>
+    <PlatformIndependentBuild>false</PlatformIndependentBuild>
+    <Version>4.0.0.0</Version>
+  </PropertyGroup>
+  <Import Project="$(SPOCLIENT)\tools\targets\Microsoft.SPOT.System.Settings" />
+  <Import Project="$(SPOCLIENT)\Framework\Features\PreStackInit_HAL.libcatproj" />
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+<ItemGroup>
+  <Compile Include="$(AS_SUBDIR)\FirstEntry.s" />
+  <Compile Include="$(AS_SUBDIR)\IDelayLoop.s" />
+  <Compile Include="$(AS_SUBDIR)\VectorsHandlers.s" />
+</ItemGroup>
+
+  <ItemGroup>
+    <HFiles Include="$(SPOCLIENT)\DeviceCode\Initialization\MasterConfig.h" />
+    <Compile Include="Aborts.cpp" />
+    <LIB_FIRSTENTRY_OBJ Include="$(OBJ_DIR)\FirstEntry.$(OBJ_EXT)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ExtraProjects Include="dotNetMF_loader.proj" Condition="'$(PLATFORM_FAMILY)'=='arm'" />
+  </ItemGroup>
+
+  <Import Project="$(SPOCLIENT)\tools\targets\Microsoft.SPOT.System.Targets" />
+</Project>

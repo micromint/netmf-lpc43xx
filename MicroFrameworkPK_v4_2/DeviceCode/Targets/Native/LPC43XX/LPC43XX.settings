@@ -1,0 +1,32 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Name>LPC43XX</Name>
+    <CpuName>Cortex-M4</CpuName>
+    <DefaultISA>THUMB2</DefaultISA>
+    <Guid>{94FDD980-06BA-449c-A5B4-785674C425C6}</Guid>
+    <Description>
+    </Description>
+    <Documentation>
+    </Documentation>
+    <ProjectPath>$(SPOCLIENT)\DeviceCode\Targets\Native\LPC43XX\LPC43XX.settings</ProjectPath>
+    <PLATFORM_FAMILY>ARM</PLATFORM_FAMILY>
+    <CustomFilter>Cortex</CustomFilter>
+    <INSTRUCTION_SET>THUMB2</INSTRUCTION_SET>
+    <TARGETPROCESSOR>LPC43XX</TARGETPROCESSOR>
+    <TARGETCODEBASE>LPC43XX</TARGETCODEBASE>
+    <TARGETCODEBASETYPE>Native</TARGETCODEBASETYPE>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(COMPILER_TOOL)'=='MDK'">
+    <DEVICE_TYPE Condition="'$(DEVICE_TYPE)' == ''">Cortex-M4</DEVICE_TYPE>
+    <BUILD_TOOL_GUID>{3B60DBC2-6E80-41FA-883E-9A36704A1772}</BUILD_TOOL_GUID>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(COMPILER_TOOL)'=='GCC'">
+    <DEVICE_TYPE Condition="'$(DEVICE_TYPE)' == ''">Cortex-M4</DEVICE_TYPE>
+    <BUILD_TOOL_GUID>{722B0D5D-1243-4557-913F-61FAB04E9209}</BUILD_TOOL_GUID>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <IncludePaths Include="DeviceCode\Targets\Native\LPC43XX" />
+    <IncludePaths Include="DeviceCode\Targets\Native\LPC43XX\DeviceCode" />
+  </ItemGroup>
+</Project>

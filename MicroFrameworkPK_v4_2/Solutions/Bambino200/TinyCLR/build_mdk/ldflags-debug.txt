@@ -1,0 +1,8 @@
+--entry EntryPoint
+--no_keep_init_arrays
+--debug
+--remove
+--unmangled
+--info sizes,totals,veneers,unused,libraries
+--map --xref --symbols
+--callgraph
