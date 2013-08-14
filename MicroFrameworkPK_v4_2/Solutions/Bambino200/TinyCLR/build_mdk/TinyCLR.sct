@@ -1,4 +1,4 @@
-LR_FLASH 0x14000000 ABSOLUTE 0x00060000
+LR_FLASH 0x14000000 ABSOLUTE 
 {
     ER_FLASH 0x14000000 FIXED 
     {
@@ -8,42 +8,40 @@ LR_FLASH 0x14000000 ABSOLUTE 0x00060000
         * (+RO-DATA)
         tinyclr_dat.o (+RO, +LAST)
     }
-    ER_RAM_RO 0x10000118 ABSOLUTE 
+    ER_CONFIG 0x14060000 FIXED 0x00004000
     {
+        * (SectionForConfig)
+    }
+    ER_SLAVE_FLASH 0x14064000 FIXED 0x0000C000
+    {
+        * (SectionForSlaveFlash)
+    }
+    ER_VECTORS 0x10000000 ABSOLUTE UNINIT
+    {
+        * (SectionForVectors)
+    }
+    ER_HEAP +0 ABSOLUTE UNINIT
+    {
+        * (SectionForHeap)
+    }
+    ER_RAM_RO 0x10080000 ABSOLUTE 
+    {
+        * (SectionForFlashOperations)
     }
     ER_RAM_RW +0 ABSOLUTE 
     {
         * (+RW-DATA, +ZI)
     }
-    ER_CUSTOM_HEAP_BEGIN 0x10015E00 ABSOLUTE UNINIT
+    ER_STACK 0x1008E000 ABSOLUTE UNINIT
     {
-        * (SectionForCustomHeapBegin)
+        * (SectionForStack)
     }
-    ER_CUSTOM_HEAP_END 0x10015FF8 ABSOLUTE UNINIT
+    ER_SLAVE_RAM 0x20000000 ABSOLUTE UNINIT
     {
-        * (SectionForCustomHeapEnd)
+        * (SectionForSlaveRam)
     }
-    ER_HEAP_BEGIN 0x10016000 ABSOLUTE UNINIT
+    ER_DMA 0x20008000 ABSOLUTE
     {
-        * (SectionForHeapBegin)
-    }
-    ER_HEAP_END 0x1001DFF8 ABSOLUTE UNINIT
-    {
-        * (SectionForHeapEnd)
-    }
-    ER_STACK_BOTTOM 0x1001E000 ABSOLUTE UNINIT
-    {
-        * (SectionForStackBottom)
-    }
-    ER_STACK_TOP 0x1001FFF8 ABSOLUTE UNINIT
-    {
-        * (SectionForStackTop)
-    }
-}
-LR_CONFIG 0x14060000 ABSOLUTE 0x00001000
-{
-    ER_CONFIG 0x14060000 FIXED 0x00001000
-    {
-        * (SectionForConfig)
+        * (SectionForDMA)
     }
 }

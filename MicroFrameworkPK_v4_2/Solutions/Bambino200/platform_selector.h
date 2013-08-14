@@ -40,17 +40,19 @@
 // constants
 //
 
-#define SYSTEM_CLOCK_HZ                 204000000
-#define SYSTEM_CYCLE_CLOCK_HZ           SYSTEM_CLOCK_HZ
+#define SYSTEM_CLOCK_HZ                 204000000  // 204 MHz Core clock
+#define SYSTEM_CYCLE_CLOCK_HZ           204000000  // 204 MHz
+#define SYSTEM_CRYSTAL_CLOCK_HZ         12000000   //  12 MHz IRC clock
+
 #define CLOCK_COMMON_FACTOR             1000000
-#define SLOW_CLOCKS_PER_SECOND          12000000
-#define SLOW_CLOCKS_TEN_MHZ_GCD         12000000
+#define SLOW_CLOCKS_PER_SECOND          1000000    //   1 MHz System timer
+#define SLOW_CLOCKS_TEN_MHZ_GCD         1000000
 #define SLOW_CLOCKS_MILLISECOND_GCD     1000
 
 #define SRAM1_MEMORY_Base   0x10000000
-#define SRAM1_MEMORY_Size   0x00020000
+#define SRAM1_MEMORY_Size   (128 * 1024)       // 128 K
 #define FLASH_MEMORY_Base   0x14000000
-#define FLASH_MEMORY_Size   0x00400000
+#define FLASH_MEMORY_Size   (4 * 1024 * 1024)  //   4 MB
 
 #define TXPROTECTRESISTOR               RESISTOR_DISABLED
 #define RXPROTECTRESISTOR               RESISTOR_DISABLED
@@ -60,15 +62,15 @@
 #define INSTRUMENTATION_H_GPIO_PIN      0
 
 #ifndef DEBUG_SERIAL
-  #define DEBUG_TEXT_PORT    USB1
+  #define DEBUG_TEXT_PORT    COM2
   #define STDIO              USB1
   #define DEBUGGER_PORT      USB1
   #define MESSAGING_PORT     USB1
 #else
-  #define DEBUG_TEXT_PORT    COM1
-  #define STDIO              COM1
-  #define DEBUGGER_PORT      COM1
-  #define MESSAGING_PORT     COM1
+  #define DEBUG_TEXT_PORT    COM2
+  #define STDIO              COM2
+  #define DEBUGGER_PORT      COM2
+  #define MESSAGING_PORT     COM2
 #endif
 
 #define OEM_VERSION_MAJOR 4

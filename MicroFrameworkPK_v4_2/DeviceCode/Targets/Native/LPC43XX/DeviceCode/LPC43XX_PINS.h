@@ -521,6 +521,8 @@ typedef enum {
     UART0_RX = P6_5,
     UART1_TX = P5_6,
     UART1_RX = P1_14,
+    UART1_RTS = P5_2,
+    UART1_CTS = P5_4,
     UART2_TX = P2_10,
     UART2_RX = P2_11,
     UART3_TX = P2_3,

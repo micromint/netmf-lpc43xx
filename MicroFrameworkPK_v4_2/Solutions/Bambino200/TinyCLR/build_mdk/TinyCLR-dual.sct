@@ -8,9 +8,9 @@ LR_FLASH 0x14000000 ABSOLUTE
         * (+RO-DATA)
         tinyclr_dat.o (+RO, +LAST)
     }
-    ER_CUSTOM_HEAP 0x10000000 ABSOLUTE UNINIT
+    ER_VECTORS 0x10000000 ABSOLUTE UNINIT
     {
-        * (SectionForCustomHeap)
+        * (SectionForVectors)
     }
     ER_HEAP +0 ABSOLUTE UNINIT
     {
@@ -31,6 +31,10 @@ LR_FLASH 0x14000000 ABSOLUTE
     ER_SLAVE_RAM 0x20000000 ABSOLUTE UNINIT
     {
         * (SectionForSlaveRam)
+    }
+    ER_DMA 0x20008000 ABSOLUTE
+    {
+        * (SectionForDMA)
     }
 }
 LR_CONFIG 0x14060000 ABSOLUTE

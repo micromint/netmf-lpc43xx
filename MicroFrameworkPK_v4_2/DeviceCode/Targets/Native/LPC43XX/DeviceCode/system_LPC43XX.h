@@ -69,8 +69,6 @@ extern "C" {
   #endif
 #endif
 
-extern uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
-
 /**
  * Initialize the system
  *
@@ -78,9 +76,12 @@ extern uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  *
  * @return none
  *
  * @brief  Setup the microcontroller system.
- *         Initialize the System and update the SystemCoreClock variable.
+ *         Initialize the System.
  */
 extern void SystemInit (void);
+
+//extern uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
+#define SystemCoreClock  MAX_CLOCK_FREQ
 
 #ifdef __cplusplus
 }

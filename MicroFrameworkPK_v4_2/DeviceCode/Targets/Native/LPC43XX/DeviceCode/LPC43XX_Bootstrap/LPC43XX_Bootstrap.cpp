@@ -25,9 +25,6 @@
 
 void BootstrapCode_GPIO();
 
-/* Clock variables */
-uint32_t SystemCoreClock;
-
 #if !defined(CORE_M0)
 /* SCU pin definitions for pin muxing */
 typedef struct {
@@ -37,7 +34,6 @@ typedef struct {
 
 /* Local functions */
 void SystemInit(void);
-static void SystemCoreClockUpdate(void);
 static void SystemSetupClock(void);
 static void SystemSetupPins(const PINMUX_GRP_T *mux, uint32_t n);
 static void SystemSetupMemory(void);
@@ -95,49 +91,11 @@ void __section(SectionForBootstrapOperations) SystemInit(void)
     fpuInit();
 #endif
 
-    SystemCoreClock = 8 * CRYSTAL_MAIN_FREQ_IN; // Boots at 8*12 MHz = 96 MHz
     SystemSetupPins(pre_clock_mux, COUNT_OF(pre_clock_mux)); /* Configure pins */
     SystemSetupClock();   /* Configure processor and peripheral clocks */
     SystemSetupPins(post_clock_mux, COUNT_OF(post_clock_mux)); /* Configure pins */
     SystemSetupMemory();  /* Configure external memory */
 #endif /* !defined(CORE_M0) */
-
-    SystemCoreClockUpdate(); /* Update SystemCoreClock variable */
-}
-
-/*
- * SystemCoreClockUpdate() - Update SystemCoreClock variable
- */
-void __section(SectionForBootstrapOperations) SystemCoreClockUpdate(void)
-{
-    uint32_t PLLReg = LPC_CGU->PLL1_CTRL;
-    uint32_t freq, msel, nsel, psel, direct, fbsel;
-    uint32_t m, n, p;
-    const uint8_t ptab[] = {1, 2, 4, 8};
-
-    /* Retrun if PLL1 not locked? */
-    if (!(LPC_CGU->PLL1_STAT & 1)) {
-        return;
-    }
-
-    /* Get PLL1 input frequency and dividers */
-    freq = CRYSTAL_MAIN_FREQ_IN;
-    msel = (PLLReg >> 16) & 0xFF;
-    nsel = (PLLReg >> 12) & 0x3;
-    psel = (PLLReg >> 8) & 0x3;
-    direct = (PLLReg >> 7) & 0x1;
-    fbsel = (PLLReg >> 6) & 0x1;
-
-    m = msel + 1;
-    n = nsel + 1;
-    p = ptab[psel];
-
-    /* Calculate PLL1 output */
-    if (direct || fbsel) {
-        SystemCoreClock = m * (freq / n);
-    } else {
-        SystemCoreClock = (m / (2 * p)) * (freq / n);
-    }
 }
 
 #if !defined(CORE_M0)
@@ -147,7 +105,7 @@ void __section(SectionForBootstrapOperations) SystemCoreClockUpdate(void)
  *    Clock       Frequency    Source
  * CLK_BASE_MX     204 MHz    CLKIN_PLL1
  * CLK_BASE_SPIFI  102 MHz    CLKIN_IDIVE
- * CLK_BASE_USB0   480 MHz    CLKIN_USBPLL (Disabled)
+ * CLK_BASE_USB0   480 MHz    CLKIN_PLL0USB (Disabled)
  * CLK_BASE_USB1    60 MHz    CLKIN_IDIVE  (Disabled)
  *                 120 MHz    CLKIN_IDIVD  (Disabled)
  *
@@ -166,7 +124,10 @@ void __section(SectionForBootstrapOperations) SystemSetupClock(void)
     WaitUs(100);
 
 #if (SPIFI_INIT)
-    /* Switch IDIVA clock to IRC and connect to SPIFI clock */
+    /* Setup SPIFI control register and no-opcode mode */
+    LPC_SPIFI->CTRL = (0x100 << 0) | (1 << 16) | (1 << 29) | (1 << 30);
+    LPC_SPIFI->IDATA = 0xA5;
+    /* Switch IDIVE clock to IRC and connect to SPIFI clock */
     LPC_CGU->IDIV_CTRL[CLK_IDIV_E] = ((1 << 11) | (CLKIN_IRC << 24));
     LPC_CGU->BASE_CLK[CLK_BASE_SPIFI] = ((1 << 11) | (CLKIN_IDIVE << 24));
 #endif /* SPIFI_INIT */
@@ -188,27 +149,33 @@ void __section(SectionForBootstrapOperations) SystemSetupClock(void)
 
     /* Switch main clock to PLL1 */
     LPC_CGU->BASE_CLK[CLK_BASE_MX] = (1 << 11) | (CLKIN_PLL1 << 24);
-#if 0
+
+    /* Switch main clock to PLL1 */
+    LPC_CGU->BASE_CLK[CLK_BASE_MX] = (1 << 11) | (CLKIN_PLL1 << 24);
+
     /* Set USB PLL dividers for 480 MHz */
     LPC_CGU->PLL[CGU_USB_PLL].PLL_MDIV = 0x06167FFA;
     LPC_CGU->PLL[CGU_USB_PLL].PLL_NP_DIV = 0x00302062;
     LPC_CGU->PLL[CGU_USB_PLL].PLL_CTRL = 0x0000081D | (CLKIN_CRYSTAL << 24);
 
     /* Switch USB0 clock to USB PLL */
-    LPC_CGU->BASE_CLK[CLK_BASE_USB0] = (1 << 0) | (1 << 11) | (CLKIN_USBPLL << 24);
+    LPC_CGU->BASE_CLK[CLK_BASE_USB0] = (1 << 0) | (1 << 11) | (CLKIN_PLL0USB << 24);
 
     /* Set IDIVE clock to PLL1/2 = 102 MHz */
     LPC_CGU->IDIV_CTRL[CLK_IDIV_E] = (1 << 2) | (1 << 11) | (CLKIN_PLL1 << 24); // PLL1/2
 
-    /* Set IDIVE clock to ((USBPLL/4) / 2) = 60 MHz and connect to USB1 */
-    LPC_CGU->IDIV_CTRL[CLK_IDIV_A] = (3 << 2) | (1 << 11) | (CLKIN_USBPLL << 24); // USBPLL/4
+    /* Set IDIVD clock to ((USBPLL/4) / 2) = 60 MHz and connect to USB1 */
+    LPC_CGU->IDIV_CTRL[CLK_IDIV_A] = (3 << 2) | (1 << 11) | (CLKIN_PLL0USB << 24); // USBPLL/4
     LPC_CGU->IDIV_CTRL[CLK_IDIV_D] = (1 << 2) | (1 << 11) | (CLKIN_IDIVA << 24); // IDIVA/2
     LPC_CGU->BASE_CLK[CLK_BASE_USB1] = (1 << 0) | (1 << 11) | (CLKIN_IDIVD << 24);
 
     /* Configure remaining integer dividers */
     LPC_CGU->IDIV_CTRL[CLK_IDIV_B] = (0 << 2) | (1 << 11) | (CLKIN_IRC << 24); // IRC
     LPC_CGU->IDIV_CTRL[CLK_IDIV_C] = (1 << 2) | (1 << 11) | (CLKIN_PLL1 << 24); // PLL1/2
-#endif
+
+    LPC_CGU->BASE_CLK[CLK_BASE_UART0] = (1 << 0) | (1 << 11) | (CLKIN_PLL1 << 24);
+    LPC_CGU->BASE_CLK[CLK_BASE_UART1] = (1 << 0) | (1 << 11) | (CLKIN_PLL1 << 24);
+    LPC_CGU->BASE_CLK[CLK_BASE_UART2] = (1 << 0) | (1 << 11) | (CLKIN_PLL1 << 24);
 #endif /* CLOCK_SETUP */
 }
 

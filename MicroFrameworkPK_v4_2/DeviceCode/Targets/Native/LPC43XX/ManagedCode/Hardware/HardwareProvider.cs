@@ -35,20 +35,20 @@ namespace Microsoft.SPOT.Hardware.LPC43XX
             switch (comPort)
             {
                 case "COM1":
-                    rxPin = Pins.CPU_PIN_P6_5;
-                    txPin = Pins.CPU_PIN_P6_4;
+                    rxPin = Pins.P6_5;
+                    txPin = Pins.P6_4;
                     ctsPin = Pins.GPIO_NONE;
                     rtsPin = Pins.GPIO_NONE;
                     break;
                 case "COM2":
-                    rxPin = Pins.CPU_PIN_P1_14;
-                    txPin = Pins.CPU_PIN_P5_6;
-                    ctsPin = Pins.CPU_PIN_P5_4;
-                    rtsPin = Pins.CPU_PIN_P4_2;
+                    rxPin = Pins.P1_14;
+                    txPin = Pins.P5_6;
+                    ctsPin = Pins.P5_4;
+                    rtsPin = Pins.P4_2;
                     break;
                 case "COM3":
-                    rxPin = Pins.CPU_PIN_P2_11;
-                    txPin = Pins.CPU_PIN_P2_10;
+                    rxPin = Pins.P2_11;
+                    txPin = Pins.P2_10;
                     ctsPin = Pins.GPIO_NONE;
                     rtsPin = Pins.GPIO_NONE;
                     break;
@@ -59,8 +59,8 @@ namespace Microsoft.SPOT.Hardware.LPC43XX
 
         override public void GetI2CPins(out Cpu.Pin scl, out Cpu.Pin sda)
         {
-            scl = Pins.CPU_PIN_P2_4;
-            sda = Pins.CPU_PIN_P2_3;
+            scl = Pins.P2_4;
+            sda = Pins.P2_3;
         }
 
         override public void GetSpiPins(SPI.SPI_module spi_mod, out Cpu.Pin msk, out Cpu.Pin miso, out Cpu.Pin mosi)
@@ -68,14 +68,14 @@ namespace Microsoft.SPOT.Hardware.LPC43XX
             switch (spi_mod)
             {
                 case SPI.SPI_module.SPI1:
-                    msk = Pins.CPU_PIN_P3_0;
-                    miso = Pins.CPU_PIN_P1_1;
-                    mosi = Pins.CPU_PIN_P1_2;
+                    msk = Pins.P3_0;
+                    miso = Pins.P1_1;
+                    mosi = Pins.P1_2;
                     break;
                 case SPI.SPI_module.SPI2:
-                    msk = Pins.CPU_PIN_PF_4;
-                    miso = Pins.CPU_PIN_P1_3;
-                    mosi = Pins.CPU_PIN_P1_4;
+                    msk = Pins.PF_4;
+                    miso = Pins.P1_3;
+                    mosi = Pins.P1_4;
                     break;
                 default:
                     throw new NotSupportedException();

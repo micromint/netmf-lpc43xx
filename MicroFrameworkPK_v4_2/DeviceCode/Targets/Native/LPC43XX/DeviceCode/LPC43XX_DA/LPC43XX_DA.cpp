@@ -24,8 +24,9 @@
 #define TOTAL_DA_CHAN  1
 #define MAX_DA_PREC    10
 
-static GPIO_PIN const DA_Pin[] = {(GPIO_PIN)P_DAC0};
+static GPIO_PIN const __section(rodata) DA_Pin[] = {(GPIO_PIN)P_DAC0};
 
+// ---------------------------------------------------------------------------
 BOOL DA_Initialize(DA_CHANNEL channel, INT32 precisionInBits)
 {
     if ((UINT32)channel >= TOTAL_DA_CHAN) return FALSE;
@@ -42,6 +43,7 @@ BOOL DA_Initialize(DA_CHANNEL channel, INT32 precisionInBits)
     return TRUE;
 }
 
+// ---------------------------------------------------------------------------
 void DA_Write(DA_CHANNEL channel, INT32 level)
 {
      uint32_t tmp;
@@ -54,11 +56,13 @@ void DA_Write(DA_CHANNEL channel, INT32 level)
     LPC_DAC->CR = tmp;
 }
 
+// ---------------------------------------------------------------------------
 UINT32 DA_DAChannels()
 {
-    return 1;
+    return TOTAL_DA_CHAN;
 }
 
+// ---------------------------------------------------------------------------
 GPIO_PIN DA_GetPinForChannel(DA_CHANNEL channel)
 {
     if ((UINT32)channel >= TOTAL_DA_CHAN) return GPIO_PIN_NONE;
@@ -66,6 +70,7 @@ GPIO_PIN DA_GetPinForChannel(DA_CHANNEL channel)
     return DA_Pin[channel];
 }
 
+// ---------------------------------------------------------------------------
 BOOL DA_GetAvailablePrecisionsForChannel(DA_CHANNEL channel, INT32* precisions, UINT32& size)
 {
     size = 0;

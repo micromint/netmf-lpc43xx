@@ -30,9 +30,11 @@ static inline int div_round_up(int x, int y)
 }
 
 // Only supports ADC0 channels. Will eventually support ADC1 channels.
-static GPIO_PIN const AD_Pin[] = {(GPIO_PIN)P_ADC0, (GPIO_PIN)P_ADC1, (GPIO_PIN)P_ADC2,
-                                  (GPIO_PIN)P_ADC3, (GPIO_PIN)P_ADC4, (GPIO_PIN)P_ADC5};
+static GPIO_PIN const __section(rodata) AD_Pin[] =
+                                {(GPIO_PIN)P_ADC0, (GPIO_PIN)P_ADC1, (GPIO_PIN)P_ADC2,
+                                 (GPIO_PIN)P_ADC3, (GPIO_PIN)P_ADC4, (GPIO_PIN)P_ADC5};
 
+// ---------------------------------------------------------------------------
 BOOL AD_Initialize(ANALOG_CHANNEL channel, INT32 precisionInBits)
 {
     GPIO_PIN pin = AD_GetPinForChannel(channel);
@@ -70,6 +72,7 @@ BOOL AD_Initialize(ANALOG_CHANNEL channel, INT32 precisionInBits)
     return TRUE;
 }
 
+// ---------------------------------------------------------------------------
 INT32 AD_Read(ANALOG_CHANNEL channel)
 {
     // Select the appropriate channel and start conversion
@@ -89,11 +92,13 @@ INT32 AD_Read(ANALOG_CHANNEL channel)
     return (data >> 6) & ADC_RANGE; // 10 bit
 }
 
+// ---------------------------------------------------------------------------
 UINT32 AD_ADChannels()
 {
     return TOTAL_AD_CHAN;
 }
 
+// ---------------------------------------------------------------------------
 GPIO_PIN AD_GetPinForChannel(ANALOG_CHANNEL channel)
 {
     if ((UINT32)channel >= TOTAL_AD_CHAN) return GPIO_PIN_NONE;
@@ -101,6 +106,7 @@ GPIO_PIN AD_GetPinForChannel(ANALOG_CHANNEL channel)
     return AD_Pin[channel];
 }
 
+// ---------------------------------------------------------------------------
 BOOL AD_GetAvailablePrecisionsForChannel( ANALOG_CHANNEL channel, INT32* precisions, UINT32& size )
 {
     size = 0;

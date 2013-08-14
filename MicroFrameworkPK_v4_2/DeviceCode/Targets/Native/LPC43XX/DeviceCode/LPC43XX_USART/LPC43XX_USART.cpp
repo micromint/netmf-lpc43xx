@@ -21,7 +21,10 @@
 #include "LPC43XX.h"
 #include "LPC43XX_PINS.h"
 
+// Registers on LPC43XX USARTs to 550 industry standard (16C550)
+
 // USART interrupt handlers
+void USART_IRQHandler(int ComPortNum);
 void USART0_IRQHandler(void* param);
 void USART1_IRQHandler(void* param);
 void USART2_IRQHandler(void* param);
@@ -34,27 +37,81 @@ typedef struct
   int txConf;
   GPIO_PIN rxPin;
   int rxConf;
+  GPIO_PIN rtsPin;
+  int rtsConf;
+  GPIO_PIN ctsPin;
+  int ctsConf;
   UINT32 irq;
   HAL_CALLBACK_FPN isr;
 } USART_PORT_T;
 
-static USART_PORT_T const USART_Port[TOTAL_USART_PORT] = {
-    {LPC_USART0, (GPIO_PIN)UART0_TX, 2, (GPIO_PIN)UART0_RX, 2, USART0_IRQn, USART0_IRQHandler},
-    {LPC_UART1,  (GPIO_PIN)UART1_TX, 4, (GPIO_PIN)UART1_RX, 1, UART1_IRQn,  USART1_IRQHandler},
-    {LPC_USART2, (GPIO_PIN)UART2_TX, 2, (GPIO_PIN)UART2_RX, 2, USART2_IRQn, USART2_IRQHandler},
-    {LPC_USART3, (GPIO_PIN)UART3_TX, 2, (GPIO_PIN)UART3_RX, 2, USART3_IRQn, USART3_IRQHandler}};
+static USART_PORT_T const __section(rodata) USART_Port[TOTAL_USART_PORT] = {
+    {LPC_USART0, (GPIO_PIN)UART0_TX, 2, (GPIO_PIN)UART0_RX, 2, 0, 0, 0, 0, USART0_IRQn, USART0_IRQHandler},
+    {LPC_UART1,  (GPIO_PIN)UART1_TX, 4, (GPIO_PIN)UART1_RX, 1,
+                 (GPIO_PIN)UART1_RTS, 4, (GPIO_PIN)UART1_CTS, 4, UART1_IRQn,  USART1_IRQHandler},
+    {LPC_USART2, (GPIO_PIN)UART2_TX, 2, (GPIO_PIN)UART2_RX, 2, 0, 0, 0, 0, USART2_IRQn, USART2_IRQHandler},
+    {LPC_USART3, (GPIO_PIN)UART3_TX, 2, (GPIO_PIN)UART3_RX, 2, 0, 0, 0, 0, USART3_IRQn, USART3_IRQHandler}};
 
 #define USART_REG(x)     (USART_Port[x].reg)
 #define USART_TxPin(x)   (USART_Port[x].txPin)
 #define USART_TxConf(x)  (USART_Port[x].txConf)
 #define USART_RxPin(x)   (USART_Port[x].rxPin)
 #define USART_RxConf(x)  (USART_Port[x].rxConf)
+#define USART_RtsPin(x)  (USART_Port[x].rtsPin)
+#define USART_RtsConf(x) (USART_Port[x].rtsConf)
+#define USART_CtsPin(x)  (USART_Port[x].ctsPin)
+#define USART_CtsConf(x) (USART_Port[x].ctsConf)
 #define USART_IRQ(x)     (USART_Port[x].irq)
 #define USART_ISR(x)     (USART_Port[x].isr)
+
+// USART IER (Interrupt Enable Register) Flags
+#define IER_RxIrq        (1 << 0)
+#define IER_TxIrq        (1 << 1)
+// USART IIR (Interrupt Identification Register) Flags
+#define IIR_NoInt        (1 << 0)
+// USART LSR (Line Status Register) Flags
+#define LSR_RxBufData    (1 << 0)
+#define LSR_TxBufEmpty   (1 << 5)
+#define LSR_TxRegEmpty   (1 << 6)
 
 // Local functions
 static BOOL USART_Config(int ComPortNum, int BaudRate, int Parity,
                          int DataBits, int StopBits, int FlowValue);
+
+// ---------------------------------------------------------------------------
+void USART_IRQHandler(int ComPortNum)
+{
+    LPC_USART_T *usart = USART_REG(ComPortNum);
+    char c;
+
+    while (!(usart->IIR & IIR_NoInt)) // Interrupt pending?
+    {
+        int lsr = usart->LSR;
+        if (lsr & LSR_TxBufEmpty) // Transmitter available?
+        {
+            if (USART_RemoveCharFromTxBuffer(ComPortNum, c))
+            {
+                usart->THR = c;  // Write data
+                Events_Set(SYSTEM_EVENT_FLAG_COM_OUT);
+            } else {
+                CPU_USART_TxBufferEmptyInterruptEnable(ComPortNum, FALSE); // Disable interrupt
+            }
+        }
+        if (lsr & LSR_RxBufData) // Data received?
+        {
+            c = (char)(usart->RBR); // Read data
+            USART_AddCharToRxBuffer(ComPortNum, c);
+            Events_Set(SYSTEM_EVENT_FLAG_COM_IN);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Need multiple ISRs since param is ignored
+void USART0_IRQHandler(void* param) { USART_IRQHandler(0); }
+void USART1_IRQHandler(void* param) { USART_IRQHandler(1); }
+void USART2_IRQHandler(void* param) { USART_IRQHandler(2); }
+void USART3_IRQHandler(void* param) { USART_IRQHandler(3); }
 
 // ---------------------------------------------------------------------------
 static BOOL USART_Config(int ComPortNum, int BaudRate, int Parity,
@@ -138,87 +195,40 @@ static BOOL USART_Config(int ComPortNum, int BaudRate, int Parity,
 }
 
 // ---------------------------------------------------------------------------
-void USART_IRQHandler(int ComPortNum, int Direction)
-{
-    LPC_USART_T *usart = USART_REG(ComPortNum);
-    char c;
-
-    switch (Direction)
-    {
-        case 1: // Transmit
-            if (USART_RemoveCharFromTxBuffer(ComPortNum, c))
-            {
-                usart->THR = c;  // Write data
-            } else {
-                CPU_USART_TxBufferEmptyInterruptEnable(ComPortNum, FALSE); // Disable interrupt
-            }
-            Events_Set(SYSTEM_EVENT_FLAG_COM_OUT);
-            break;
-
-        case 2: // Receive
-            c = (char)(usart->RBR); // Read data
-            USART_AddCharToRxBuffer(ComPortNum, c);
-            Events_Set(SYSTEM_EVENT_FLAG_COM_IN);
-            break;
-
-        default:
-            break;
-    }
-}
-
-// ---------------------------------------------------------------------------
-void USART0_IRQHandler(void* param)
-{
-    USART_IRQHandler(0, (LPC_USART0->IIR >> 1) & 0x7);
-}
-
-// ---------------------------------------------------------------------------
-void USART1_IRQHandler(void* param)
-{
-    USART_IRQHandler(1, (LPC_UART1->IIR >> 1) & 0x7);
-}
-
-// ---------------------------------------------------------------------------
-void USART2_IRQHandler(void* param)
-{
-    USART_IRQHandler(2, (LPC_USART2->IIR >> 1) & 0x7);
-}
-
-// ---------------------------------------------------------------------------
-void USART3_IRQHandler(void* param)
-{
-    USART_IRQHandler(3, (LPC_USART3->IIR >> 1) & 0x7);
-}
-
-// ---------------------------------------------------------------------------
 BOOL CPU_USART_Initialize(int ComPortNum, int BaudRate, int Parity,
                           int DataBits, int StopBits, int FlowValue)
 {
     LPC_USART_T *usart = USART_REG(ComPortNum);
+    volatile int tmp;
 
     if (ComPortNum >= TOTAL_USART_PORT) return FALSE;
 
     GLOBAL_LOCK(irq);
 
-    // Enable fifos and default rx trigger level
-    usart->FCR = 1 << 0  // FIFO Enable - 0 = Disables, 1 = Enabled
-               | 0 << 1  // Rx Fifo Reset
-               | 0 << 2  // Tx Fifo Reset
-               | 0 << 6; // Rx irq trigger level - 0 = 1 char, 1 = 4 chars, 2 = 8 chars, 3 = 14 chars
-
-    // Disable irqs
-    usart->IER = 0 << 0  // Rx Data available irq enable
-               | 0 << 1  // Tx Fifo empty irq enable
-               | 0 << 2; // Rx Line Status irq enable
-    
-    // Configure baud rate and format
-    USART_Config(ComPortNum, BaudRate, Parity, DataBits, StopBits, FlowValue);
-    
     // Configure USART pins
-    PIN_Config(USART_TxPin(ComPortNum), (SCU_PINIO_PULLUP | USART_TxConf(ComPortNum)));
-    PIN_Config(USART_RxPin(ComPortNum), (SCU_PINIO_PULLUP | USART_RxConf(ComPortNum)));
+    PIN_Config(USART_TxPin(ComPortNum), (SCU_MODE_MODE_REPEATER | USART_TxConf(ComPortNum)));
+    PIN_Config(USART_RxPin(ComPortNum), (SCU_PINIO_PULLNONE | USART_RxConf(ComPortNum)));
+
+    // Configure baud rate and format, enable clock
+    usart->LCR = 0;
+  	usart->ACR = 0;
+    USART_Config(ComPortNum, BaudRate, Parity, DataBits, StopBits, FlowValue);
+    LPC_CGU->BASE_CLK[(CLK_BASE_UART0 + ComPortNum)] &= ~1;
+
+    // Enable transmitter, set modem flow control if COM2
+    usart->TER1 = (1 << 7);
+    if (ComPortNum == 1) {
+        	usart->MCR = 0; // (1 << 6) | (1 << 7); // Auto RTS/CTS
+            tmp = usart->MSR; // Clear status
+    } else {
+            usart->TER2 = (1 << 0);
+    }
+
+    // Enable and reset FIFOs, level 2 = 8 char
+    usart->FCR = (1 << 0) | (1 << 1) | (1 << 2) | (2 << 6);
 
     // Unprotect pins and activate interrupts
+    usart->IER = 0; // Clear interrupts
     CPU_USART_ProtectPins(ComPortNum, FALSE);
     CPU_INTC_ActivateInterrupt(USART_IRQ(ComPortNum), USART_ISR(ComPortNum), 0);
 
@@ -232,10 +242,9 @@ BOOL CPU_USART_Uninitialize(int ComPortNum)
 
     GLOBAL_LOCK(irq);
 
-    usart->FCR = 1 << 1  // Rx FIFO reset
-               | 1 << 2  // Tx FIFO reset
-               | 0 << 6; // Interrupt depth
-
+    // Disable FIFOs, clock and interrupts
+    usart->FCR = 0;  // Disable FIFOs
+    LPC_CGU->BASE_CLK[(CLK_BASE_UART0 + ComPortNum)] |= 1;
     CPU_INTC_DeactivateInterrupt(USART_IRQ(ComPortNum));
     CPU_USART_ProtectPins(ComPortNum, TRUE);  
     return TRUE;
@@ -244,13 +253,13 @@ BOOL CPU_USART_Uninitialize(int ComPortNum)
 // ---------------------------------------------------------------------------
 BOOL CPU_USART_TxBufferEmpty(int ComPortNum)
 {
-    return ((USART_REG(ComPortNum)->LSR & (1 << 5)) ? TRUE : FALSE);
+    return ((USART_REG(ComPortNum)->LSR & LSR_TxBufEmpty) ? TRUE : FALSE);
 }
 
 // ---------------------------------------------------------------------------
 BOOL CPU_USART_TxShiftRegisterEmpty(int ComPortNum)
 {
-    return ((USART_REG(ComPortNum)->LSR & (1 << 6)) ? TRUE : FALSE);
+    return ((USART_REG(ComPortNum)->LSR & LSR_TxRegEmpty) ? TRUE : FALSE);
 }
 
 // ---------------------------------------------------------------------------
@@ -266,18 +275,27 @@ void CPU_USART_TxBufferEmptyInterruptEnable(int ComPortNum, BOOL Enable)
 
     if (Enable)
     {
-        usart->IER |=  0x02;
+        usart->IER |=  (IER_TxIrq);
+
+        // Tx Empty irq in USART will trigger after data is transmitted.
+        // If transmitter available and data is pending, get it started
+        char c;
+        if (usart->LSR & LSR_TxBufEmpty && USART_RemoveCharFromTxBuffer(ComPortNum, c))
+        {
+            usart->THR = c;  // Write data
+            Events_Set(SYSTEM_EVENT_FLAG_COM_OUT);
+        }
     }
     else
     {
-        usart->IER &= ~(0x02);
+        usart->IER &= ~(IER_TxIrq);
     }
 }
 
 // ---------------------------------------------------------------------------
 BOOL CPU_USART_TxBufferEmptyInterruptState(int ComPortNum)
 {
-    if (USART_REG(ComPortNum)->IER & 0x02) return TRUE;
+    if (USART_REG(ComPortNum)->IER & IER_TxIrq) return TRUE;
     return FALSE;
 }
 
@@ -288,18 +306,18 @@ void CPU_USART_RxBufferFullInterruptEnable(int ComPortNum, BOOL Enable)
 
     if (Enable)
     {
-       usart->IER |=  0x01;
+       usart->IER |=  IER_RxIrq;
     }
     else
     {
-       usart->IER &= ~(0x01);
+       usart->IER &= ~(IER_RxIrq);
     }
 }
 
 // ---------------------------------------------------------------------------
 BOOL CPU_USART_RxBufferFullInterruptState(int ComPortNum)
 {
-    if (USART_REG(ComPortNum)->IER & 0x01) return TRUE;
+    if (USART_REG(ComPortNum)->IER & IER_RxIrq) return TRUE;
     return FALSE;
 }
 
@@ -326,9 +344,9 @@ UINT32 CPU_USART_PortsCount()
 void CPU_USART_GetPins( int ComPortNum, GPIO_PIN& rxPin, GPIO_PIN& txPin,GPIO_PIN& ctsPin, GPIO_PIN& rtsPin )
 {   
     rxPin = USART_RxPin(ComPortNum); 
-    txPin = USART_TxPin(ComPortNum); 
-    ctsPin= GPIO_PIN_NONE; 
-    rtsPin= GPIO_PIN_NONE; 
+    txPin = USART_TxPin(ComPortNum);
+    ctsPin= (USART_CtsPin(ComPortNum)) ? USART_CtsPin(ComPortNum) : GPIO_PIN_NONE; 
+    rtsPin= (USART_RtsPin(ComPortNum)) ? USART_RtsPin(ComPortNum) : GPIO_PIN_NONE;
 
     return;
 }

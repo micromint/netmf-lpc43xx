@@ -73,7 +73,7 @@
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>1</RunUserProg1>
+            <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>1</RunUserProg2>
             <UserProg1Name>$K\ARM\BIN\ELFDWT.EXE !L BASEADDRESS(0x14000000)</UserProg1Name>
             <UserProg2Name>fromelf --bin -o "$L@L.bin" "$L@L.axf"</UserProg2Name>
@@ -165,7 +165,7 @@
             <Capability>1</Capability>
             <DriverSelection>4096</DriverSelection>
           </Flash1>
-          <bUseTDR>0</bUseTDR>
+          <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
           <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
@@ -327,7 +327,7 @@
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
-                <StartAddress>0x20000000</StartAddress>
+                <StartAddress>0x10080000</StartAddress>
                 <Size>0x12000</Size>
               </OCR_RVCT10>
             </OnChipMemories>
@@ -1200,7 +1200,7 @@
                   <MiscControls></MiscControls>
                   <Define></Define>
                   <Undefine></Undefine>
-                  <IncludePath>..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_PWM;..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_Serial;..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_USB;..\..\..\..\DeviceCode\pal\OneWire\DallasSemi</IncludePath>
+                  <IncludePath>..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_PWM;..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_Serial;..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_USB;..\..\..\..\CLR\Libraries\SPOT_IO;..\..\..\..\DeviceCode\pal\OneWire\DallasSemi</IncludePath>
                 </VariousControls>
               </Cads>
               <Aads>
@@ -1463,6 +1463,36 @@
               <FilePath>..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_Usb\spot_hardware_usb_native_Microsoft_SPOT_Hardware_UsbClient_UsbStream.cpp</FilePath>
             </File>
             <File>
+              <FileName>spot_io_native.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\CLR\Libraries\SPOT_IO\spot_io_native.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>spot_io_native_Microsoft_SPOT_IO_NativeFileStream.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\CLR\Libraries\SPOT_IO\spot_io_native_Microsoft_SPOT_IO_NativeFileStream.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>spot_io_native_Microsoft_SPOT_IO_NativeFindFile.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\CLR\Libraries\SPOT_IO\spot_io_native_Microsoft_SPOT_IO_NativeFindFile.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>spot_io_native_Microsoft_SPOT_IO_NativeIO.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\CLR\Libraries\SPOT_IO\spot_io_native_Microsoft_SPOT_IO_NativeIO.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>spot_io_native_Microsoft_SPOT_IO_RemovableMedia.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\CLR\Libraries\SPOT_IO\spot_io_native_Microsoft_SPOT_IO_RemovableMedia.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>spot_io_native_Microsoft_SPOT_IO_VolumeInfo.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\CLR\Libraries\SPOT_IO\spot_io_native_Microsoft_SPOT_IO_VolumeInfo.cpp</FilePath>
+            </File>
+            <File>
               <FileName>spot_update_native.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\..\CLR\Libraries\SPOT_Update\spot_update_native.cpp</FilePath>
@@ -1548,6 +1578,11 @@
               <FilePath>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_INTC\LPC43XX_INTC.cpp</FilePath>
             </File>
             <File>
+              <FileName>LPC43XX_IPC.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_IPC\LPC43XX_IPC.cpp</FilePath>
+            </File>
+            <File>
               <FileName>LPC43XX_Power.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_Power\LPC43XX_Power.cpp</FilePath>
@@ -1578,9 +1613,9 @@
               <FilePath>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_USART\LPC43XX_USART.cpp</FilePath>
             </File>
             <File>
-              <FileName>LPC43XX_USBROM.cpp</FileName>
+              <FileName>LPC43XX_USB.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_USBROM\LPC43XX_USBROM.cpp</FilePath>
+              <FilePath>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_USB\LPC43XX_USB.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -1788,9 +1823,49 @@
               <FilePath>..\..\..\..\DeviceCode\Drivers\Display\stubs\Display_stubs_functions.cpp</FilePath>
             </File>
             <File>
+              <FileName>FAT_File.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_File.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FAT_FileHandle.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_FileHandle.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FAT_FS.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_FS.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FAT_FS_Utility.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_FS_Utility.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FAT_LogicDisk.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_LogicDisk.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FAT_MemoryManager.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_MemoryManager.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FAT_SectorCache.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_SectorCache.cpp</FilePath>
+            </File>
+            <File>
               <FileName>LargeBuffer_stubs.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\..\DeviceCode\Drivers\LargeBuffer\stubs\LargeBuffer_stubs.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>fs.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\fs.cpp</FilePath>
             </File>
             <File>
               <FileName>stubs_functions_cache.cpp</FileName>
@@ -1963,7 +2038,7 @@
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>1</RunUserProg1>
+            <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>1</RunUserProg2>
             <UserProg1Name>$K\ARM\BIN\ELFDWT.EXE !L BASEADDRESS(0x14000000)</UserProg1Name>
             <UserProg2Name>fromelf --bin -o "$L@L.bin" "$L@L.axf"</UserProg2Name>
@@ -2055,7 +2130,7 @@
             <Capability>1</Capability>
             <DriverSelection>4096</DriverSelection>
           </Flash1>
-          <bUseTDR>0</bUseTDR>
+          <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
           <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
@@ -2217,7 +2292,7 @@
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
-                <StartAddress>0x20000000</StartAddress>
+                <StartAddress>0x10080000</StartAddress>
                 <Size>0x12000</Size>
               </OCR_RVCT10>
             </OnChipMemories>
@@ -3090,7 +3165,7 @@
                   <MiscControls></MiscControls>
                   <Define></Define>
                   <Undefine></Undefine>
-                  <IncludePath>..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_PWM;..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_Serial;..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_USB;..\..\..\..\DeviceCode\pal\OneWire\DallasSemi</IncludePath>
+                  <IncludePath>..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_PWM;..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_Serial;..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_USB;..\..\..\..\CLR\Libraries\SPOT_IO;..\..\..\..\DeviceCode\pal\OneWire\DallasSemi</IncludePath>
                 </VariousControls>
               </Cads>
               <Aads>
@@ -3353,6 +3428,36 @@
               <FilePath>..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_Usb\spot_hardware_usb_native_Microsoft_SPOT_Hardware_UsbClient_UsbStream.cpp</FilePath>
             </File>
             <File>
+              <FileName>spot_io_native.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\CLR\Libraries\SPOT_IO\spot_io_native.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>spot_io_native_Microsoft_SPOT_IO_NativeFileStream.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\CLR\Libraries\SPOT_IO\spot_io_native_Microsoft_SPOT_IO_NativeFileStream.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>spot_io_native_Microsoft_SPOT_IO_NativeFindFile.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\CLR\Libraries\SPOT_IO\spot_io_native_Microsoft_SPOT_IO_NativeFindFile.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>spot_io_native_Microsoft_SPOT_IO_NativeIO.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\CLR\Libraries\SPOT_IO\spot_io_native_Microsoft_SPOT_IO_NativeIO.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>spot_io_native_Microsoft_SPOT_IO_RemovableMedia.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\CLR\Libraries\SPOT_IO\spot_io_native_Microsoft_SPOT_IO_RemovableMedia.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>spot_io_native_Microsoft_SPOT_IO_VolumeInfo.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\CLR\Libraries\SPOT_IO\spot_io_native_Microsoft_SPOT_IO_VolumeInfo.cpp</FilePath>
+            </File>
+            <File>
               <FileName>spot_update_native.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\..\CLR\Libraries\SPOT_Update\spot_update_native.cpp</FilePath>
@@ -3438,6 +3543,11 @@
               <FilePath>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_INTC\LPC43XX_INTC.cpp</FilePath>
             </File>
             <File>
+              <FileName>LPC43XX_IPC.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_IPC\LPC43XX_IPC.cpp</FilePath>
+            </File>
+            <File>
               <FileName>LPC43XX_Power.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_Power\LPC43XX_Power.cpp</FilePath>
@@ -3468,9 +3578,9 @@
               <FilePath>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_USART\LPC43XX_USART.cpp</FilePath>
             </File>
             <File>
-              <FileName>LPC43XX_USBROM.cpp</FileName>
+              <FileName>LPC43XX_USB.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_USBROM\LPC43XX_USBROM.cpp</FilePath>
+              <FilePath>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_USB\LPC43XX_USB.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -3678,9 +3788,49 @@
               <FilePath>..\..\..\..\DeviceCode\Drivers\Display\stubs\Display_stubs_functions.cpp</FilePath>
             </File>
             <File>
+              <FileName>FAT_File.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_File.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FAT_FileHandle.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_FileHandle.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FAT_FS.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_FS.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FAT_FS_Utility.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_FS_Utility.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FAT_LogicDisk.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_LogicDisk.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FAT_MemoryManager.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_MemoryManager.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FAT_SectorCache.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\FAT_SectorCache.cpp</FilePath>
+            </File>
+            <File>
               <FileName>LargeBuffer_stubs.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\..\DeviceCode\Drivers\LargeBuffer\stubs\LargeBuffer_stubs.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>fs.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\DeviceCode\Drivers\FS\FAT\fs.cpp</FilePath>
             </File>
             <File>
               <FileName>stubs_functions_cache.cpp</FileName>

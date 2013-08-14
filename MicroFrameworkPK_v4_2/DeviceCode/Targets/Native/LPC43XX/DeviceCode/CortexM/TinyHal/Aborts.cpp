@@ -14,8 +14,6 @@
 
 #include <tinyhal.h>
 
-//--//
-
 #if !defined(BUILD_RTM)
 
 void monitor_debug_printf( const char* format, ... )

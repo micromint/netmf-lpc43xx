@@ -18,21 +18,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <tinyhal.h>
 
-#define FLASH_MANUFACTURER_CODE              0x0000  // not used
-#define FLASH_DEVICE_CODE                    0x0000  // not used
-// Region 1: CLR                   -  6 * 64K blocks (384K)
+#define FLASH_MANUFACTURER_CODE              0x00EF  // Winbond
+#define FLASH_DEVICE_CODE                    0x4016  // W32Q32FV
+
+// Region 1: CLR                   -  6 * 64K blocks   (384K)
 #define FLASH_BASE_ADDRESS1                  0x14000000
 #define FLASH_BLOCK_COUNT1                   6
 #define FLASH_BYTES_PER_BLOCK1               (64*1024)
-// Region 1: Config + slave core  -  4 * 16K blocks (64K)
+// Region 1: Config + slave core  -  4 * 16K blocks     (64K)
 #define FLASH_BASE_ADDRESS2                  0x14060000
 #define FLASH_BLOCK_COUNT2                   4
 #define FLASH_BYTES_PER_BLOCK2               (16*1024)
-// Region 3: Deployment            - 25 * 64K blocks (1600K)
+// Region 3: Deployment            - 9 * 64K blocks    (576K)
 #define FLASH_BASE_ADDRESS3                  0x14070000
-#define FLASH_BLOCK_COUNT3                   25
+#define FLASH_BLOCK_COUNT3                   9
 #define FLASH_BYTES_PER_BLOCK3               (64*1024)
-// Region 4: Filesystem            - 32 * 64K blocks (ToDo)
+// Region 4: Filesystem            - 48 * 64K blocks (3,072K)
+#define FLASH_BASE_ADDRESS4                  0x14100000
+#define FLASH_BLOCK_COUNT4                   48
+#define FLASH_BYTES_PER_BLOCK4               (64*1024)
+
 #define FLASH_BYTES_PER_SECTOR               2
 #define FLASH_BLOCK_ERASE_TYPICAL_TIME_USEC  1000000 // not used
 #define FLASH_SECTOR_WRITE_TYPICAL_TIME_USEC 10      // not used
@@ -57,7 +62,7 @@
 #define LPC43XX__SUPPORTS_XIP      TRUE
 #define LPC43XX__WRITE_PROTECTED   FALSE
 #define LPC43XX__SUPP_COPY_BACK    FALSE
-#define LPC43XX__NUM_REGIONS       3
+#define LPC43XX__NUM_REGIONS       4
 
 #if defined(BUILD_RTM)
         #define MEMORY_BLOCKTYPE_SPECIAL  BlockRange::BLOCKTYPE_DEPLOYMENT
@@ -67,18 +72,23 @@
 
 const BlockRange g_LPC43XX_BlockRange1[] =
 {
-    { BlockRange::BLOCKTYPE_CODE      ,   0, 5 },  // 0x14000000 CLR         384k
+    { BlockRange::BLOCKTYPE_CODE      ,   0, 5 },  // 0x14000000 CLR          384k
 };
 
 const BlockRange g_LPC43XX_BlockRange2[] =
 {
-    { BlockRange::BLOCKTYPE_CONFIG    ,   0, 0 },  // 0x14060000 Config       16k
-//    { BlockRange::BLOCKTYPE_CODE      ,   1, 3 },  // 0x14064000 Slave        48k
+    { BlockRange::BLOCKTYPE_CONFIG    ,   0, 0 },  // 0x14060000 Config        16k
+//    { BlockRange::BLOCKTYPE_CODE      ,   1, 3 },  // 0x14064000 Slave         48k
 };
 
 const BlockRange g_LPC43XX_BlockRange3[] =
 {
-    { BlockRange::BLOCKTYPE_DEPLOYMENT,   0, 24},  // 0x14070000 Deployment 1600k
+    { BlockRange::BLOCKTYPE_DEPLOYMENT,   0, 8},   // 0x14070000 Deployment   576k
+};
+
+const BlockRange g_LPC43XX_BlockRange4[] =
+{
+    { BlockRange::BLOCKTYPE_FILESYSTEM,   0, 47},  // 0x14100000 Filesystem 3,072k
 };
 
 const BlockRegionInfo  g_LPC43XX_BlkRegion[LPC43XX__NUM_REGIONS] = 
@@ -90,7 +100,7 @@ const BlockRegionInfo  g_LPC43XX_BlkRegion[LPC43XX__NUM_REGIONS] =
         ARRAYSIZE_CONST_EXPR(g_LPC43XX_BlockRange1),
         g_LPC43XX_BlockRange1,
     },
-    
+
     {
         FLASH_BASE_ADDRESS2,    // ByteAddress   Start;           // Starting Sector address
         FLASH_BLOCK_COUNT2,     // UINT32        NumBlocks;       // total number of blocks in this region
@@ -98,13 +108,21 @@ const BlockRegionInfo  g_LPC43XX_BlkRegion[LPC43XX__NUM_REGIONS] =
         ARRAYSIZE_CONST_EXPR(g_LPC43XX_BlockRange2),
         g_LPC43XX_BlockRange2,
     },
-    
+
     {
         FLASH_BASE_ADDRESS3,    // ByteAddress   Start;           // Starting Sector address
         FLASH_BLOCK_COUNT3,     // UINT32        NumBlocks;       // total number of blocks in this region
         FLASH_BYTES_PER_BLOCK3, // UINT32        BytesPerBlock;   // Total number of bytes per block
         ARRAYSIZE_CONST_EXPR(g_LPC43XX_BlockRange3),
         g_LPC43XX_BlockRange3,
+    },
+
+    {
+        FLASH_BASE_ADDRESS4,    // ByteAddress   Start;           // Starting Sector address
+        FLASH_BLOCK_COUNT4,     // UINT32        NumBlocks;       // total number of blocks in this region
+        FLASH_BYTES_PER_BLOCK4, // UINT32        BytesPerBlock;   // Total number of bytes per block
+        ARRAYSIZE_CONST_EXPR(g_LPC43XX_BlockRange3),
+        g_LPC43XX_BlockRange4,
     }
 };
 

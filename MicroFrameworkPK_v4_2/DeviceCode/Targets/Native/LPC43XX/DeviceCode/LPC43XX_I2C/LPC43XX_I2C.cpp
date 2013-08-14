@@ -20,32 +20,37 @@
 #include <tinyhal.h>
 #include "LPC43XX.h"
 
-//--//
 struct I2C_CONFIGURATION; 
 
+// ---------------------------------------------------------------------------
 BOOL I2C_Internal_Initialize()
 {
     return FALSE;
 }
 
+// ---------------------------------------------------------------------------
 BOOL I2C_Internal_Uninitialize()
 {
     return FALSE;
 }
 
+// ---------------------------------------------------------------------------
 void I2C_Internal_XActionStart( I2C_HAL_XACTION* xAction, bool repeatedStart )
 {
 }
 
+// ---------------------------------------------------------------------------
 void I2C_Internal_XActionStop()
 {
 }
 
+// ---------------------------------------------------------------------------
 void I2C_Internal_GetClockRate( UINT32 rateKhz, UINT8& clockRate, UINT8& clockRate2)
 {
     return ;
 }
 
+// ---------------------------------------------------------------------------
 void I2C_Internal_GetPins( GPIO_PIN& scl, GPIO_PIN& sda )
 {
     scl = GPIO_PIN_NONE;

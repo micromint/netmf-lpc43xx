@@ -20,16 +20,14 @@
 #include <tinyhal.h>
 #include "LPC43XX.h"
 
-//--//
-
+// ---------------------------------------------------------------------------
 void HAL_AssertEx()
 {
     // cause an abort and let the abort handler take over
     *((char*)0xFFFFFFFF) = 'a';
 }
 
-//--//
-
+// ---------------------------------------------------------------------------
 BOOL CPU_Initialize()
 {
     NATIVE_PROFILE_HAL_PROCESSOR_POWER();
@@ -37,6 +35,7 @@ BOOL CPU_Initialize()
     return TRUE;
 }
 
+// ---------------------------------------------------------------------------
 void CPU_Reset()
 {
     NATIVE_PROFILE_HAL_PROCESSOR_POWER();
@@ -45,6 +44,7 @@ void CPU_Reset()
     while(1); // wait for reset
 }
 
+// ---------------------------------------------------------------------------
 void CPU_Sleep(SLEEP_LEVEL level, UINT64 wakeEvents)
 {
     NATIVE_PROFILE_HAL_PROCESSOR_POWER();
@@ -52,6 +52,7 @@ void CPU_Sleep(SLEEP_LEVEL level, UINT64 wakeEvents)
     __WFI();
 }
 
+// ---------------------------------------------------------------------------
 void CPU_ChangePowerLevel(POWER_LEVEL level)
 {
     switch(level)
@@ -68,13 +69,14 @@ void CPU_ChangePowerLevel(POWER_LEVEL level)
     }
 }
 
+// ---------------------------------------------------------------------------
 BOOL CPU_IsSoftRebootSupported ()
 {
     NATIVE_PROFILE_HAL_PROCESSOR_POWER();
     return TRUE;
 }
 
-
+// ---------------------------------------------------------------------------
 void CPU_Halt()
 {
     NATIVE_PROFILE_HAL_PROCESSOR_POWER();

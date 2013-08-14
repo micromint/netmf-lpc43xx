@@ -37,7 +37,8 @@
 // device descriptor
 #define     VENDOR_ID          0x16D0
 #define     PRODUCT_ID         0x085A
-#define     MAX_EP0_SIZE            8
+#define     MAX_EP0_SIZE           64
+#define     MAX_EP_SIZE            512
 //configuration descriptor
 #define     USB_MAX_CURRENT     (200/USB_CURRENT_UNIT)
 
@@ -89,7 +90,7 @@ const struct USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration =
         },
         USB_DEVICE_DESCRIPTOR_LENGTH,       // Length of device descriptor
         USB_DEVICE_DESCRIPTOR_TYPE,         // USB device descriptor type
-        0x0200,                             // USB Version 2.00 (BCD)
+        0x0110,                             // USB Version 1.10 (BCD)
         0,                                  // Device class (none)
         0,                                  // Device subclass (none)
         0,                                  // Device protocol (none)
@@ -144,8 +145,9 @@ const struct USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration =
         sizeof(USB_ENDPOINT_DESCRIPTOR),
         USB_ENDPOINT_DESCRIPTOR_TYPE,
         USB_ENDPOINT_DIRECTION_IN + 1,
-        USB_ENDPOINT_ATTRIBUTE_BULK,
-        64,                                         // Endpoint 1 packet size
+//        USB_ENDPOINT_ATTRIBUTE_BULK,
+        USB_ENDPOINT_ATTRIBUTE_INTERRUPT,
+        MAX_EP_SIZE,                                // Endpoint 1 packet size
         0                                           // Endpoint 1 interval        
     },
 
@@ -154,8 +156,9 @@ const struct USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration =
         sizeof(USB_ENDPOINT_DESCRIPTOR),
         USB_ENDPOINT_DESCRIPTOR_TYPE,
         USB_ENDPOINT_DIRECTION_OUT + 2,
-        USB_ENDPOINT_ATTRIBUTE_BULK,
-        64,                                         // Endpoint 2 packet size
+//        USB_ENDPOINT_ATTRIBUTE_BULK,
+        USB_ENDPOINT_ATTRIBUTE_INTERRUPT,
+        MAX_EP_SIZE,                                // Endpoint 2 packet size
         0                                           // Endpoint 2 interval
     },
 

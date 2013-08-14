@@ -18,6 +18,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <tinyhal.h>
 #include "LPC43XX.h"
+
+// On the LPC43xx the MCU pin name and the GPIO pin name are not the same.
+// To simplify logic, the Pin identifier is an encoded value with the SCU and
+// GPIO data. It is not a sequential number. See LPC43XX_PINS.h for details.
 #include "LPC43XX_PINS.h"
 
 #define TOTAL_GPIO_PORT  8
@@ -25,7 +29,15 @@
 #define TOTAL_GPIO_INT   8
 
 // GPIO interrupt handlers
-void GPIO_IRQHandler(void* param);
+void GPIO_IRQHandler(int IrqNum);
+void GPIO0_IRQHandler(void* param);
+void GPIO1_IRQHandler(void* param);
+void GPIO2_IRQHandler(void* param);
+void GPIO3_IRQHandler(void* param);
+void GPIO4_IRQHandler(void* param);
+void GPIO5_IRQHandler(void* param);
+void GPIO6_IRQHandler(void* param);
+void GPIO7_IRQHandler(void* param);
 
 static UINT32 g_pinReserved[TOTAL_GPIO_PORT]; // 1 bit per pin
 
@@ -39,13 +51,19 @@ typedef struct
 } GPIO_IRQ_T;
 
 static GPIO_IRQ_T gpio_irq[TOTAL_GPIO_INT];
-static UINT8 g_channel; // Next avaiable GPIO IRQ
-static UINT32 g_debounceTicks;
-static HAL_COMPLETION g_completions[TOTAL_GPIO_INT]; // Debounce completions
+static const HAL_CALLBACK_FPN gpio_isr[TOTAL_GPIO_INT] = {
+    GPIO0_IRQHandler, GPIO1_IRQHandler, GPIO2_IRQHandler, GPIO3_IRQHandler,
+    GPIO4_IRQHandler, GPIO5_IRQHandler, GPIO6_IRQHandler, GPIO7_IRQHandler};
+static UINT8 g_channel; // Next available GPIO IRQ
 
 // Local functions
 static UINT8 GPIO_InitIRQ(GPIO_PIN Pin, GPIO_INTERRUPT_SERVICE_ROUTINE ISR, void* Param);
 static void GPIO_SetIRQ(UINT8 ch, GPIO_INT_EDGE IntEdge, BOOL Enable);
+
+// Debounce support
+static UINT32 g_debounceTicks;
+static HAL_COMPLETION g_completions[TOTAL_GPIO_INT];
+static void GPIO_DebounceHandler (void* arg);
 
 // ---------------------------------------------------------------------------
 static UINT8 GPIO_InitIRQ(GPIO_PIN Pin, GPIO_INTERRUPT_SERVICE_ROUTINE ISR, void* Param)
@@ -55,7 +73,7 @@ static UINT8 GPIO_InitIRQ(GPIO_PIN Pin, GPIO_INTERRUPT_SERVICE_ROUTINE ISR, void
     GPIO_IRQ_T *obj;
 
     // Set IRQ data
-    *obj = gpio_irq[ch];
+    obj = &gpio_irq[ch];
     obj->ch = g_channel;
     obj->pin = Pin;
     obj->isr = ISR;
@@ -74,7 +92,7 @@ static UINT8 GPIO_InitIRQ(GPIO_PIN Pin, GPIO_INTERRUPT_SERVICE_ROUTINE ISR, void
         LPC_SCU->PINTSEL1 |= (((port << 5) | bit) << ((g_channel - 4) << 3));
     }
 	
-    CPU_INTC_ActivateInterrupt((IRQn_Type)(PIN_INT0_IRQn + g_channel), GPIO_IRQHandler, (void*) obj);
+    CPU_INTC_ActivateInterrupt((IRQn_Type)(PIN_INT0_IRQn + g_channel), gpio_isr[g_channel], (void*) obj);
 
     // Increment channel number
     g_channel++;
@@ -93,10 +111,10 @@ static void GPIO_SetIRQ(UINT8 ch, GPIO_INT_EDGE IntEdge, BOOL Enable)
     LPC_GPIO_PIN_INT->IST = pmask;
 
     // Configure pin interrupt
-    LPC_GPIO_PIN_INT->ISEL &= ~pmask;
+    // Rising edge or high level interrupt?
     if (IntEdge == GPIO_INT_EDGE_HIGH
+         || IntEdge == GPIO_INT_LEVEL_HIGH
          || IntEdge == GPIO_INT_EDGE_BOTH) {
-        // Rising edge interrupts
         if (Enable) {
             LPC_GPIO_PIN_INT->SIENR |= pmask;
         } else {
@@ -104,25 +122,52 @@ static void GPIO_SetIRQ(UINT8 ch, GPIO_INT_EDGE IntEdge, BOOL Enable)
         }
     } 
 
+    // Falling edge or low level interrupt?
     if (IntEdge == GPIO_INT_EDGE_LOW
+         || IntEdge == GPIO_INT_LEVEL_LOW
          || IntEdge == GPIO_INT_EDGE_BOTH) {
-        // Falling edge interrupts
         if (Enable) {
             LPC_GPIO_PIN_INT->SIENF |= pmask;
         } else {
             LPC_GPIO_PIN_INT->CIENF |= pmask;
         }
     }
-    // Handle GPIO_INT_LEVEL_HIGH, GPIO_INT_LEVEL_LOW
+
+    // Level or edge?
+    if (IntEdge == GPIO_INT_LEVEL_HIGH
+         || IntEdge == GPIO_INT_LEVEL_LOW) {
+        LPC_GPIO_PIN_INT->ISEL |= pmask;
+    } else {
+        LPC_GPIO_PIN_INT->ISEL &= ~pmask;
+    }
 }
 
 // ---------------------------------------------------------------------------
-void GPIO_IRQHandler(void* param)
+static void GPIO_DebounceHandler (void* arg)
 {
-    GPIO_IRQ_T *obj = (GPIO_IRQ_T*)param;
-  
-    obj->isr(obj->pin, CPU_GPIO_GetPinState(obj->pin), obj->param);
 }
+
+// ---------------------------------------------------------------------------
+void GPIO_IRQHandler(int IrqNum)
+{
+    GPIO_IRQ_T *obj = &gpio_irq[IrqNum];
+    UINT32 mask = (1 << IrqNum);
+
+    obj->isr(obj->pin, CPU_GPIO_GetPinState(obj->pin), obj->param);
+    LPC_GPIO_PIN_INT->RISE = mask;
+    LPC_GPIO_PIN_INT->FALL = mask;
+}
+
+// ---------------------------------------------------------------------------
+// Need multiple ISRs since param is ignored
+void GPIO0_IRQHandler(void* param) { GPIO_IRQHandler(0); }
+void GPIO1_IRQHandler(void* param) { GPIO_IRQHandler(1); }
+void GPIO2_IRQHandler(void* param) { GPIO_IRQHandler(2); }
+void GPIO3_IRQHandler(void* param) { GPIO_IRQHandler(3); }
+void GPIO4_IRQHandler(void* param) { GPIO_IRQHandler(4); }
+void GPIO5_IRQHandler(void* param) { GPIO_IRQHandler(5); }
+void GPIO6_IRQHandler(void* param) { GPIO_IRQHandler(6); }
+void GPIO7_IRQHandler(void* param) { GPIO_IRQHandler(7); }
 
 // ---------------------------------------------------------------------------
 BOOL CPU_GPIO_Initialize()
@@ -251,14 +296,31 @@ void CPU_GPIO_SetPinState(GPIO_PIN Pin, BOOL PinState)
 // ---------------------------------------------------------------------------
 BOOL CPU_GPIO_PinIsBusy(GPIO_PIN Pin)
 {
-    UINT8 port = LPC43XX_GPIO_PORT(Pin), bit = LPC43XX_GPIO_PIN(Pin);
+    UINT8 port, bit;
+
+    if (Pin > TOTAL_GPIO_PINS) { // Is Pin ID encoded?
+        port = LPC43XX_GPIO_PORT(Pin); // If so, decode it
+        bit = LPC43XX_GPIO_PIN(Pin);
+    } else {
+        port = Pin / 32;
+        bit = Pin % 32;
+    }
+
     return ((g_pinReserved[port] >> bit) & 1);
 }
 
 // ---------------------------------------------------------------------------
 BOOL CPU_GPIO_ReservePin(GPIO_PIN Pin, BOOL fReserve)
 {
-    UINT8 port = LPC43XX_GPIO_PORT(Pin), bit = LPC43XX_GPIO_PIN(Pin);
+    UINT8 port, bit;
+
+    if (Pin > TOTAL_GPIO_PINS) { // Is Pin ID encoded?
+        port = LPC43XX_GPIO_PORT(Pin); // If so, decode it
+        bit = LPC43XX_GPIO_PIN(Pin);
+    } else {
+        port = Pin / 32;
+        bit = Pin % 32;
+    }
 
     if (fReserve)
     {

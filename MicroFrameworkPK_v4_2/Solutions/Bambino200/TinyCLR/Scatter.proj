@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <AssemblyName>tinyclr</AssemblyName>
+    <ProjectGuid>{00D200D0-00C0-0061-8344-1D5B06193925}</ProjectGuid>
+    <Description />
+    <Documentation />
+    <Directory>Solutions\Bambino200\TinyCLR</Directory>
+    <IsClrProject>True</IsClrProject>
+    <InteropFeatures />
+    <ExtraAssemblies />
+    <ProjectPath>$(SPOCLIENT)\Solutions\Bambino200\TinyCLR\TinyCLR.proj</ProjectPath>
+    <MFSettingsFile>$(SPOCLIENT)\Solutions\Bambino200\Bambino200.settings</MFSettingsFile>
+    <IsSolutionWizardVisible>True</IsSolutionWizardVisible>
+  </PropertyGroup>
+  <Import Project="$(SPOCLIENT)\tools\targets\Microsoft.SPOT.System.Settings" />
+  <Import Project="$(SPOCLIENT)\tools\Targets\Microsoft.SPOT.Build.Targets" />
+  <PropertyGroup>
+    <IsSolutionWizardVisible>True</IsSolutionWizardVisible>
+    <OutputType>Executable</OutputType>
+    <MultipleOutputSections Condition="'$(MEMORY)'=='FLASH'">true</MultipleOutputSections>
+    <ADD_LOAD_IMAGE_CRC>true</ADD_LOAD_IMAGE_CRC>
+    <ExtraTargets>BuildSigFiles</ExtraTargets>
+    <ExtraEXETargets>MetaDataProcessorDat</ExtraEXETargets>
+    <ImageLocation Condition="'$(MEMORY)'=='FLASH'">\ER_FLASH</ImageLocation>
+    <LINK_FLAGS Condition="'$(COMPILER_TOOL)'!='GCC'">$(LINK_FLAGS) $(SWTC)keep *(.init_array)</LINK_FLAGS>
+    <MMP_DAT_SKIP>false</MMP_DAT_SKIP>
+    <EXEScatterFileDefinition>$(SRC_DIR)\scatterfile_tinyclr_$(COMPILER_TOOL).$(SCATTER_EXT)</EXEScatterFileDefinition>
+  </PropertyGroup>
+    <PropertyGroup> 
+        <ExtraTargets>$(ExtraTargets);CompressImage</ExtraTargets>
+        <CompressImageFlashSym>EntryPoint</CompressImageFlashSym> 
+        <CompressImageCfgSym>g_ConfigurationSector</CompressImageCfgSym>
+    </PropertyGroup>
+    <ItemGroup>
+        <CompressImageSymdef Include="$(BIN_DIR)\TinyCLR.symdefs" /> 
+        <CompressImageFlash Include="$(BIN_DIR)\TinyCLR.bin\ER_FLASH" /> 
+        <!-- <CompressImageDat Include="$(BIN_DIR)\TinyCLR.bin\ER_DAT" />  -->
+        <CompressImageCfg Include="$(BIN_DIR)\TinyCLR.bin\ER_CONFIG" />
+    </ItemGroup>
+  <Import Project="$(SPOCLIENT)\tools\targets\Microsoft.SPOT.System.Targets" />
+</Project>

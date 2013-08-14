@@ -1,38 +1,39 @@
 <?xml version="1.0"?>
 <ScatterFile xmlns="http://schemas.microsoft.com/netmf/ScatterfileSchema.xsd">
 
-    <!-- LPC4330 with 4M Flash, 264k SRAM -->
-    <!-- IROM1 0x14000000 - 0x17FFFFFF   4M SPIFI Flash -->
-    <!-- IRAM1 0x10000000 - 0x10000000 128K SRAM        -->
-    <!-- IRAM2 0x10080000 - 0x10091FFF  72K SRAM        -->
-    <!-- IRAM3 0x20000000 - 0x20000000  64K AHBSRAM     -->
+    <!-- LPC4330 with 4M Flash, 264k SRAM                     -->
+    <!-- IROM1 0x14000000 - 0x143FFFFF   4M SPIFI Flash       -->
+    <!--       CLR, Config, Slave code, Deploy, FS            -->
+    <!-- IRAM1 0x10000000 - 0x1001FFFF 128K SRAM              -->
+    <!--       Vectors, Heap                                  -->
+    <!-- IRAM2 0x10080000 - 0x10091FFF  72K SRAM              -->
+    <!--       Variables, Stack                               -->
+    <!-- IRAM3 0x20000000 - 0x2000FFFF  64K AHBSRAM           -->
+    <!--       Slave core, buffers for peripheral/bus masters -->
     <!-- ################################################################################ -->
 
-    <Set Name="RAM_Start"               Value="0x10000118"/>
-    <!-- Custom Heap 0x0200 512b -->
-    <Set Name="Custom_Heap_Begin"       Value="0x10015E00"/>
-    <Set Name="Custom_Heap_End"         Value="0x10015FF8"/>
-    <!-- Heap        0x8000 32K -->
-    <Set Name="Heap_Begin"              Value="0x10016000"/>
-    <Set Name="Heap_End"                Value="0x1001DFF8"/>
-    <!-- Stack       0x2000  16K -->
-    <Set Name="Stack_Bottom"            Value="0x1001E000"/>
-    <Set Name="Stack_Top"               Value="0x1001FFF8"/>
+    <!-- Define RAM size for heap, custom heap, slave and stack in FirstEntry.s -->
+    <Set Name="Vectors_Begin"           Value="0x10000000"/>
+    <Set Name="RAM_Start"               Value="0x10080000"/>
+    <Set Name="Stack_Bottom"            Value="0x1008E000"/>
+    <Set Name="Slave_RAM_Address"       Value="0x20000000"/>
+    <Set Name="DMA_Address"             Value="0x20008000"/>
     
     <If Name="TARGETLOCATION" In="FLASH">
         <Set Name="Code_BaseAddress"    Value="0x14000000"/>
-        <Set Name="Code_Size"           Value="0x00060000" />
         <Set Name="Config_BaseAddress"  Value="0x14060000"/>    
         <Set Name="Config_Size"         Value="0x00004000"/>
+        <Set Name="Slave_Flash_Address" Value="0x14064000"/>    
+        <Set Name="Slave_Flash_Size"    Value="0x0000C000"/>
     </If>
+    <!-- RAM target would only support a reduced set of drivers -->
     <If Name="TARGETLOCATION" In="RAM">
         <Set Name="Code_BaseAddress"    Value="0x10000000"/>
-        <Set Name="Code_Size"           Value="0x00060000"/>
     </If>
 
     <!-- ################################################################################ -->
 
-    <LoadRegion Name="LR_%TARGETLOCATION%" Base="%Code_BaseAddress%" Options="ABSOLUTE" Size="%Code_Size%">
+    <LoadRegion Name="LR_%TARGETLOCATION%" Base="%Code_BaseAddress%" Options="ABSOLUTE" Size="">
 
         <ExecRegion Name="ER_%TARGETLOCATION%" Base="%Code_BaseAddress%" Options="FIXED" Size="">
             <FileMapping Name="FirstEntry.obj"   Options="(+RO, +FIRST)" /> <!-- the entry pointer section goes into this region -->
@@ -52,10 +53,16 @@
 
         </ExecRegion>
 
+        <ExecRegion Name="ER_VECTORS" Base="%Vectors_Begin%" Options="ABSOLUTE" Size="UNINIT">
+            <FileMapping Name="*" Options="(SectionForVectors)" />
+        </ExecRegion>
+
+        <ExecRegion Name="ER_HEAP" Base="+0" Options="ABSOLUTE" Size="UNINIT">
+            <FileMapping Name="*" Options="(SectionForHeap)" />
+        </ExecRegion>
+
         <ExecRegion Name="ER_RAM_RO" Base="%RAM_Start%" Options="ABSOLUTE" Size="">
-            <!-- Flash programming from Flash is saved on LPC43XX -->
-            <!-- No need to place Flash programming code in RAM -->
-            <!-- <FileMapping Name="*" Options="(SectionForFlashOperations)" /> -->
+            <FileMapping Name="*" Options="(SectionForFlashOperations)" />
         </ExecRegion>
 
         <ExecRegion Name="ER_RAM_RW" Base="+0" Options="ABSOLUTE" Size="">
@@ -76,35 +83,25 @@
             </ExecRegion>
         </IfDefined>
 
-        <ExecRegion Name="ER_CUSTOM_HEAP_BEGIN" Base="%Custom_Heap_Begin%" Options="ABSOLUTE" Size="UNINIT">
-          <FileMapping Name="*" Options="(SectionForCustomHeapBegin)" />
+        <ExecRegion Name="ER_STACK" Base="%Stack_Bottom%" Options="ABSOLUTE" Size="UNINIT">
+            <FileMapping Name="*" Options="(SectionForStack)" />
         </ExecRegion>
 
-        <!-- everything between heapbegin and heapend will be allocated for the unmanaged SimpleHeap -->
+        <IfDefined Name="Slave_RAM_Address">
 
-        <ExecRegion Name="ER_CUSTOM_HEAP_END" Base="%Custom_Heap_End%" Options="ABSOLUTE" Size="UNINIT">
-          <FileMapping Name="*" Options="(SectionForCustomHeapEnd)" />
-        </ExecRegion>
+            <ExecRegion Name="ER_SLAVE_RAM" Base="%Slave_RAM_Address%" Options="ABSOLUTE" Size="UNINIT">
+                <FileMapping Name="*" Options="(SectionForSlaveRam)" />
+            </ExecRegion>
 
-        <ExecRegion Name="ER_HEAP_BEGIN" Base="%Heap_Begin%" Options="ABSOLUTE" Size="UNINIT">
-            <FileMapping Name="*" Options="(SectionForHeapBegin)" />
-        </ExecRegion>
+        </IfDefined>
 
-        <!-- everything between heapbegin and heapend will be allocated for a heap -->
+        <IfDefined Name="DMA_Address">
 
-        <ExecRegion Name="ER_HEAP_END" Base="%Heap_End%" Options="ABSOLUTE" Size="UNINIT">
-            <FileMapping Name="*" Options="(SectionForHeapEnd)" />
-        </ExecRegion>
+            <ExecRegion Name="ER_DMA" Base="%DMA_Address%" Options="ABSOLUTE" Size="">
+                <FileMapping Name="*" Options="(SectionForDMA)" />
+            </ExecRegion>
 
-        <!-- this must go last here to provide a low water mark on the stack -->
-
-        <ExecRegion Name="ER_STACK_BOTTOM" Base="%Stack_Bottom%" Options="ABSOLUTE" Size="UNINIT">
-            <FileMapping Name="*" Options="(SectionForStackBottom)" />
-        </ExecRegion>
-	    
-        <ExecRegion Name="ER_STACK_TOP" Base="%Stack_Top%" Options="ABSOLUTE" Size="UNINIT">
-            <FileMapping Name="*" Options="(SectionForStackTop)" />
-        </ExecRegion>
+        </IfDefined>
 
     </LoadRegion>
 
@@ -115,9 +112,7 @@
         <LoadRegion Name="LR_DAT" Base="%Data_BaseAddress%" Options="ABSOLUTE" Size="%Data_Size%">
 
             <ExecRegion Name="ER_DAT" Base="%Data_BaseAddress%" Options="FIXED" Size="%Data_Size%">
-
                 <FileMapping Name="tinyclr_dat.obj" Options="(+RO)" />
-
             </ExecRegion>
 
         </LoadRegion>
@@ -126,13 +121,19 @@
 
     <IfDefined Name="Config_BaseAddress">
 
-        <LoadRegion Name="LR_CONFIG" Base="%Config_BaseAddress%" Options="ABSOLUTE" Size="%Config_Size%">
+        <LoadRegion Name="LR_CONFIG" Base="%Config_BaseAddress%" Options="ABSOLUTE" Size="">
 
             <ExecRegion Name="ER_CONFIG" Base="%Config_BaseAddress%" Options="FIXED" Size="%Config_Size%">
-
                 <FileMapping Name="*" Options="(SectionForConfig)" />
-
             </ExecRegion>
+
+        <IfDefined Name="Slave_Flash_Address">
+
+            <ExecRegion Name="ER_SLAVE_FLASH" Base="%Slave_Flash_Address%" Options="FIXED" Size="%Slave_Flash_Size%">
+                <FileMapping Name="*" Options="(SectionForSlaveFlash)" />
+            </ExecRegion>
+
+        </IfDefined>
 
         </LoadRegion>
 

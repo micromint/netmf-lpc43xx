@@ -13,6 +13,7 @@ extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_Microsoft_SPOT_Hardw
 extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_Microsoft_SPOT_Hardware_UsartEvent;
 extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_Microsoft_SPOT_Hardware_Usb;
 extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_Microsoft_SPOT_Hardware_PWM;
+extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_Microsoft_SPOT_IO;
 extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_System_Xml;
  
 const CLR_RT_NativeAssemblyData *g_CLR_InteropAssembliesNativeData[] =
@@ -26,6 +27,7 @@ const CLR_RT_NativeAssemblyData *g_CLR_InteropAssembliesNativeData[] =
     &g_CLR_AssemblyNative_Microsoft_SPOT_Hardware_UsartEvent,
     &g_CLR_AssemblyNative_Microsoft_SPOT_Hardware_Usb,
     &g_CLR_AssemblyNative_Microsoft_SPOT_Hardware_PWM,
+    &g_CLR_AssemblyNative_Microsoft_SPOT_IO,
     &g_CLR_AssemblyNative_System_Xml,
     NULL
 };
