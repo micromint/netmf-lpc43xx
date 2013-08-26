@@ -62,7 +62,7 @@
 #define INSTRUMENTATION_H_GPIO_PIN      0
 
 #ifndef DEBUG_SERIAL
-  #define DEBUG_TEXT_PORT    COM2
+  #define DEBUG_TEXT_PORT    USB1
   #define STDIO              USB1
   #define DEBUGGER_PORT      USB1
   #define MESSAGING_PORT     USB1

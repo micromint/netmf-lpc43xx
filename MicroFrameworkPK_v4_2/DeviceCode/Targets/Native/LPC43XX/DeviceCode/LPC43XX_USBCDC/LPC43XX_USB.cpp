@@ -20,6 +20,7 @@
 
 #include <tinyhal.h>
 #include <pal\com\usb\USB.h>
+#include <WireProtocol.h> // for WP_Packet
 #include "LPC43XX.h"
 
 // Uses the USB stack in ROM on the LPC4350/30/20 and LPC185x/3x/2x.
@@ -30,8 +31,6 @@
 // LPC18XX - http://www.nxp.com/documents/user_manual/UM10430.pdf
 //
 #define USE_USB_ROM_STACK  1
-//#define USE_USB_CUSTOM
-#define USE_USB_PATCH
 
 #include "LPC43XX_USB.h"
 
@@ -48,6 +47,7 @@ static UINT32 const USB_CLK[] = {CLK_BASE_USB0, CLK_BASE_USB1};
 typedef struct
 {
   USBD_HANDLE_T hCore;
+  USBD_HANDLE_T hCdc;
   BOOL enabled;
   UINT8 flags;
   USB_CONTROLLER_STATE *pState;
@@ -57,10 +57,6 @@ typedef struct
 
 static USB_CORE_T usb_core[MAX_USB_CORE];
 static USB_CONTROLLER_STATE usb_ctrl_state[MAX_USB_CORE];
-#ifdef USE_USB_PATCH
-static USB_EP_HANDLER_T EP0_Default_Handler;
-static uint32_t EP0_RX_Busy = 0; // flag indicating whether EP0 OUT/RX buffer is busy
-#endif
 
 #define USB_REG(core)      (USB_REG_BASE[core])
 #define USB_HANDLE(core)   (usb_core[core].hCore)
@@ -87,14 +83,17 @@ Hal_Queue_KnownSize<USB_PACKET64,USB_QUEUE_PACKET_COUNT> QueueBuffers[USB_MAX_EP
 #pragma arm section zidata = "SectionForDMA"
 
 #define USBROM_MEM_SIZE (4 * 1024)
+#define CDC_MEM_SIZE    (2 * 1024)
 #define EP_MEM_SIZE     (1024)
 
 ALIGNED(2048) static UINT8 usbrom_buff[MAX_USB_CORE][USBROM_MEM_SIZE];
+ALIGNED(1024) static UINT8 cdc_buff[MAX_USB_CORE][CDC_MEM_SIZE];
+
 // Endpoint buffers
 ALIGNED(4) static UINT8 ep_out_data[MAX_USB_CORE][EP_MEM_SIZE];
 ALIGNED(4) static UINT8 ep_in_data[MAX_USB_CORE][EP_MEM_SIZE];
-ALIGNED(4) static UINT8 ep_out_count[MAX_USB_CORE];
-ALIGNED(4) static UINT8 ep_in_count[MAX_USB_CORE];
+ALIGNED(4) static UINT16 ep_out_count[MAX_USB_CORE];
+ALIGNED(4) static UINT16 ep_in_count[MAX_USB_CORE];
 
 // Copy of descriptors in AHBSRAM
 ALIGNED(4) static UINT8 USBROM_DeviceDescriptor[sizeof(USB_DeviceDescriptor)];
@@ -109,21 +108,20 @@ ALIGNED(4) static UINT8 USBROM_DeviceQualifier[sizeof(USB_DeviceQualifier)];
 // Local functions
 static ErrorCode_t USB_InitStack(int core);
 // USB device event callbacks
+static ErrorCode_t USB_Reset_Event_Handler(USBD_HANDLE_T hUsb);
 static ErrorCode_t USB_Suspend_Event_Handler(USBD_HANDLE_T hUsb);
 static ErrorCode_t USB_Resume_Event_Handler(USBD_HANDLE_T hUsb);
-static ErrorCode_t USB_Reset_Event_Handler(USBD_HANDLE_T hUsb);
 // USB endpoint event callbacks
 static ErrorCode_t USB_EP_In_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 event);
 static ErrorCode_t USB_EP_Out_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 event);
 
-#ifdef USE_USB_PATCH
-ErrorCode_t USB_EP0_Patch(USBD_HANDLE_T hUsb, void* data, UINT32 event);
-#endif
-#ifdef USE_USB_CUSTOM
-ErrorCode_t USB_EP0_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 event);
-static ErrorCode_t USB_EP0_Setup(USBD_HANDLE_T hUsb);
-static ErrorCode_t USB_EP0_Transmit(USBD_HANDLE_T hUsb, UINT8* data, UINT32 cnt);
-#endif
+static USB_EP_HANDLER_T CDC_Default_Handler; // Default CDC EP0 handler
+static CDC_LINE_CODING* cdc_coding;
+
+// CDC functions
+static ErrorCode_t CDC_Init(int core);
+static ErrorCode_t CDC_EP0_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 event);
+static ErrorCode_t CDC_SetLineCode(USBD_HANDLE_T hCDC, CDC_LINE_CODING *lineCoding);
 
 // ---------------------------------------------------------------------------
 static ErrorCode_t USB_InitStack(int core)
@@ -163,12 +161,88 @@ static ErrorCode_t USB_InitStack(int core)
 }
 
 // ---------------------------------------------------------------------------
+static ErrorCode_t CDC_Init(int core)
+{
+    if (USB_HCDC(core)) return RET_OK; // Only init once
+
+    USBD_CDC_INIT_PARAM_T cdc_param;
+    USB_CORE_CTRL_T* pCtrl;
+    USB_INTERFACE_DESCRIPTOR *pIfDesc;
+    USB_INTERFACE_DESCRIPTOR *pDataIfDesc;
+    USBD_HANDLE_T hUsb = USB_HANDLE(core);
+    ErrorCode_t ret;
+
+    pIfDesc = (USB_INTERFACE_DESCRIPTOR*)((UINT32)USBROM_ConfigDescriptor + USB_CONFIGURATION_DESCRIPTOR_LENGTH);
+    pDataIfDesc = (USB_INTERFACE_DESCRIPTOR*)((UINT32)pIfDesc + sizeof(USB_INTERFACE_DESCRIPTOR)
+                    + 0x0013 + sizeof(USB_ENDPOINT_DESCRIPTOR));
+
+    // Set CDC parameters
+    memset((void*)&cdc_param, 0, sizeof(USBD_CDC_INIT_PARAM_T));
+    cdc_param.mem_base = (UINT32)&cdc_buff[core];
+    cdc_param.mem_size = CDC_MEM_SIZE;
+    cdc_param.cif_intf_desc = (UINT8*)pIfDesc;
+    cdc_param.dif_intf_desc = (UINT8*)pDataIfDesc;
+    cdc_param.SetLineCode = CDC_SetLineCode;
+
+    USBD_RegisterEpHandler(hUsb, USB_EP_INDEX_IN(BULK_IN_EP), USB_EP_In_Handler, (void*)BULK_IN_EP);
+    USBD_RegisterEpHandler(hUsb, USB_EP_INDEX_OUT(BULK_OUT_EP), USB_EP_Out_Handler, (void*)BULK_OUT_EP);
+    ret = USBD_API->cdc->init(hUsb, &cdc_param, &USB_HCDC(core));
+
+    // Patch from LPC43XX errata - Save default CDC handler and replace it
+    pCtrl = (USB_CORE_CTRL_T*)hUsb;
+    if (pCtrl->ep0_hdlr_cb[pCtrl->num_ep0_hdlrs - 1] != CDC_EP0_Handler)
+    {
+        CDC_Default_Handler = pCtrl->ep0_hdlr_cb[pCtrl->num_ep0_hdlrs - 1];
+        pCtrl->ep0_hdlr_cb[pCtrl->num_ep0_hdlrs - 1] = CDC_EP0_Handler;
+    }
+
+    cdc_coding = &(((USB_CDC_CTRL_T*)USB_HCDC(core))->line_coding);
+
+    return ret;
+}
+
+// ---------------------------------------------------------------------------
+static ErrorCode_t CDC_EP0_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 event)
+{
+    USB_CORE_CTRL_T* pCtrl = (USB_CORE_CTRL_T*)hUsb;
+    USB_CDC_CTRL_T* pCdcCtrl = (USB_CDC_CTRL_T*)data;
+    ErrorCode_t ret = ERR_USBD_UNHANDLED;
+
+    // Patch from LPC43XX errata - Send acknowledge after SET_LINE_CONFIG
+    if((event == USB_EVT_OUT) &&
+            (pCtrl->SetupPacket.bmRequestType.BM.Type == REQUEST_CLASS) &&
+            (pCtrl->SetupPacket.bmRequestType.BM.Recipient == REQUEST_TO_INTERFACE) &&
+            ((pCtrl->SetupPacket.wIndex.WB.L == pCdcCtrl->cif_num) || // IF number correct?
+            (pCtrl->SetupPacket.wIndex.WB.L == pCdcCtrl->dif_num)))
+    {
+        pCtrl->EP0Data.pData -= pCtrl->SetupPacket.wLength;
+        ret = pCdcCtrl->CIC_SetRequest(pCdcCtrl, &pCtrl->SetupPacket,
+                                        &pCtrl->EP0Data.pData,
+                                        pCtrl->SetupPacket.wLength);
+        if (ret == LPC_OK)
+        {
+            USBD_API->core->StatusInStage(pCtrl); // Send Acknowledge
+        }
+    } else {
+        ret = CDC_Default_Handler(hUsb, data, event);
+    }
+
+    return ret;
+}
+
+// ---------------------------------------------------------------------------
+static ErrorCode_t CDC_SetLineCode(USBD_HANDLE_T hCDC, CDC_LINE_CODING *lineCoding)
+{
+    memcpy(cdc_coding, lineCoding, sizeof(CDC_LINE_CODING));
+    return LPC_OK;
+}
+
+// ---------------------------------------------------------------------------
 static ErrorCode_t USB_Suspend_Event_Handler(USBD_HANDLE_T hUsb)
 {
     int core = USB_CORE(hUsb);
-    USB_CONTROLLER_STATE *State;
+    USB_CONTROLLER_STATE *State = USB_STATE(core);
 
-    State = USB_STATE(core);
     USB_PREVSTAT(core) = State->DeviceState;
     State->DeviceState = USB_DEVICE_STATE_SUSPENDED;
     USB_StateCallback(State);
@@ -179,9 +253,8 @@ static ErrorCode_t USB_Suspend_Event_Handler(USBD_HANDLE_T hUsb)
 static ErrorCode_t USB_Resume_Event_Handler (USBD_HANDLE_T hUsb)
 {
     int core = USB_CORE(hUsb);
-    USB_CONTROLLER_STATE *State;
+    USB_CONTROLLER_STATE *State = USB_STATE(core);
 
-    State = USB_STATE(core);
     State->DeviceState = USB_PREVSTAT(core);
     USB_PREVSTAT(core) = 0;
     USB_StateCallback(State);
@@ -198,201 +271,20 @@ static ErrorCode_t USB_Reset_Event_Handler(USBD_HANDLE_T hUsb)
     USB_ClearEvent(0, USB_EVENT_ALL);
 
     State->FirstGetDescriptor = TRUE;
-#ifdef USE_USB_CUSTOM
-    State->DeviceState = USB_DEVICE_STATE_DEFAULT;
-#endif
+    //State->DeviceState = USB_DEVICE_STATE_DEFAULT;
     State->Address = 0;
     USB_StateCallback(State);
     USB_FLAGS(core) = 0;
 
     // Reset endpoints
+    USBD_ResetEP(hUsb, USB_ENDPOINT_IN(INT_IN_EP));
     USBD_ResetEP(hUsb, USB_ENDPOINT_IN(BULK_IN_EP));
     USBD_ResetEP(hUsb, USB_ENDPOINT_OUT(BULK_OUT_EP));
     ep_out_count[core] = 0;
     ep_in_count[core] = 0;
 
-#ifdef USE_USB_PATCH
-    EP0_Default_Handler(hUsb, 0, USB_EVT_IN_STALL);
-#endif
-
     return RET_OK;
 }
-
-#ifdef USE_USB_CUSTOM
-// ---------------------------------------------------------------------------
-// Process requests for control endpoint (ep0)
-ErrorCode_t USB_EP0_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 event)
-{
-    USB_CORE_CTRL_T* pCtrl = (USB_CORE_CTRL_T*)hUsb;
-
-    switch(event)
-    {
-        case USB_EVT_SETUP:
-            // Handle SETUP events
-            return USB_EP0_Setup(hUsb);
-
-#if 0
-        case USB_EVT_OUT:
-        case USB_EVT_OUT_NAK:
-            // Handle OUT events (Rx <-- Host OUT)
-            if (pCtrl->EP0Data.Count) {	// Data to receive ?
-                USBD_DataOutStage(hUsb); // If so, receive data
-            }
-            if (pCtrl->EP0Data.Count == 0) { // Data complete ?
-                // Process data on the buffer
-                USBD_StatusInStage(hUsb); // Set state
-            }
-            return LPC_OK;
-            break;
-#endif
-
-        case USB_EVT_IN:
-            // Handle IN events (Rx --> Host IN)
-            if (pCtrl->EP0Data.Count) { // Data to send?
-                USBD_DataInStage(hUsb);  // If so, send it
-            } else {
-                USBD_StatusOutStage(hUsb); // Else set state
-            }
-            return LPC_OK;
-            break;
-
-        default:
-            break;
-    }
-
-    return RET_UNHANDLED;
-}
-
-// ---------------------------------------------------------------------------
-// Process setup requests for control endpoint (ep0)
-static ErrorCode_t USB_EP0_Setup(USBD_HANDLE_T hUsb)
-{
-    int core = USB_CORE(hUsb);
-    USB_CONTROLLER_STATE *State;
-    USB_CORE_CTRL_T* pCtrl = (USB_CORE_CTRL_T*)hUsb;
-#if 0    
-    USB_SETUP_PACKET Setup;
-    BOOL shortDescriptor = FALSE;
-
-    // Setup packet received
-    State = USB_STATE(core);
-    USBD_ReadSetupPkt(hUsb, USB_ENDPOINT_OUT(0), (UINT32*)&Setup);
-    pCtrl->EP0Data.Count = Setup.wLength;
-
-    // Special handling for the very first SETUP command
-    // Getdescriptor[DeviceType], the host looks for 8 bytes data only
-    if ((Setup.bRequest == USB_GET_DESCRIPTOR)
-                && (((Setup.wValue & 0xFF00) >> 8) == USB_DEVICE_DESCRIPTOR_TYPE)
-                && (Setup.wLength != 0x12))
-            shortDescriptor = TRUE;
-
-    // Send setup packet to upper layer
-    State->Data = (UINT8*)&Setup;
-    State->DataSize = Setup.wLength; //sizeof(USB_SETUP_PACKET); //?
-#else
-    USB_SETUP_PACKET* Setup;
-    BOOL shortDescriptor = FALSE;
-
-    // Setup packet received
-    State = USB_STATE(core);
-    Setup = (USB_SETUP_PACKET*)&pCtrl->SetupPacket;
-
-    // Special handling for the very first SETUP command
-    // Getdescriptor[DeviceType], the host looks for 8 bytes data only
-    if ((Setup->bRequest == USB_GET_DESCRIPTOR)
-                && (((Setup->wValue & 0xFF00) >> 8) == USB_DEVICE_DESCRIPTOR_TYPE)
-                && (Setup->wLength != 0x12))
-            shortDescriptor = TRUE;
-
-    // Send setup packet to upper layer
-    State->Data = (UINT8*)Setup;
-    State->DataSize = sizeof(USB_SETUP_PACKET); //?
-#endif
-    UINT8 result = USB_ControlCallback(State);
-
-    switch(result)
-    {
-        case USB_STATE_DATA:
-            // Setup packet was handled and the upper layer has data to send
-            break;
-
-        case USB_STATE_ADDRESS:
-            // Upper layer needs us to change the address 
-            //USBD_SetAddress(hUsb, State->Address); // Handled by USB stack
-            return RET_UNHANDLED; // Let USB stack do it
-
-        case USB_STATE_DONE:
-            State->DataCallback = NULL;
-            break;
-
-        case USB_STATE_STALL:
-            // setup packet failed to process successfully
-            // set stall condition on the default control endpoint           
-            //USBD_SetStallEP(hUsb, 0); // Handled by USB stack
-            return RET_UNHANDLED; // Let USB stack do it
-
-        case USB_STATE_STATUS:
-            // Handled by USB stack
-            break;
-
-        case USB_STATE_CONFIGURATION:
-            break;
-
-        case USB_STATE_REMOTE_WAKEUP:
-            // It is not using currently as the device side won't go into SUSPEND mode unless
-            // the PC is purposely to select it to SUSPEND, as there is always SOF in the bus
-            // to keeping the device from SUSPEND.
-            break;
-
-        default:
-            ASSERT(0);
-            break;
-            // Status change is only handled by USB stack
-    }
-            
-    if (result != USB_STATE_STALL)
-    {
-        if (State->DataCallback)
-        {
-            // This call can't fail
-            State->DataCallback(State);
-
-            if (State->DataSize > 0)
-            {
-                UINT32 cnt = (shortDescriptor ? 8 : State->DataSize);
-
-                USB_EP0_Transmit(hUsb, State->Data, cnt);
-
-                // Special handling the USB driver set address test, cannot use 
-                // first descriptor as ADDRESS state if handle is in hardware
-                if (shortDescriptor) State->DataCallback = NULL;
-            }
-        }
-    }
-
-    // If port is now configured, output any queued data
-    if (result == USB_STATE_CONFIGURATION)
-    {
-        for (int epNum = 1; epNum < State->EndpointCount; epNum++ )
-        {
-            if (State->Queues[epNum] && State->IsTxQueue[epNum])
-                CPU_USB_StartOutput(State, epNum);
-        }
-    }
-    return RET_OK;
-}
-
-static ErrorCode_t USB_EP0_Transmit(USBD_HANDLE_T hUsb, UINT8* data, UINT32 cnt)
-{
-    USB_CORE_CTRL_T* pCtrl = (USB_CORE_CTRL_T*)hUsb;
-
-    pCtrl->EP0Data.pData = data;
-    pCtrl->EP0Data.Count = cnt;
-    USBD_DataInStage(hUsb);
-
-    return RET_OK;
-}
-#endif // USE_USB_CUSTOM
 
 // ---------------------------------------------------------------------------
 // Receive buffer when handling data endpoint OUT event (Rx <-- Host OUT)
@@ -444,11 +336,14 @@ static ErrorCode_t USB_EP_Out_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 eve
 // Transmit buffer when handling data endpoint IN event (Tx -> Host IN)
 static ErrorCode_t USB_EP_In_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 event)
 {
-    // Handle IN events
+    // Exit if not an IN event
     if (event != USB_EVT_IN) return RET_UNHANDLED;
 
     int epNum = (int)data;
     int core = USB_CORE(hUsb);
+
+    // Exit if buffer empty
+    if (ep_in_count[core] == 0) return RET_UNHANDLED;
 
     // Send buffer
     USBD_WriteEP(hUsb, USB_ENDPOINT_IN(epNum), ep_in_data[core], ep_in_count[core]);
@@ -469,34 +364,11 @@ void USB1_IRQHandler(void* param)
     USBD_ISR(USB_HANDLE(1));
 }
 
-#ifdef USE_USB_PATCH
-// ---------------------------------------------------------------------------
-ErrorCode_t USB_EP0_Patch(USBD_HANDLE_T hUsb, void* data, UINT32 event)
-{
-    switch (event) {
-        case USB_EVT_OUT_NAK:
-            if (EP0_RX_Busy) {
-                // we already queued the buffer so ignore this NAK event
-                return LPC_OK;
-            } else {
-                // Mark EP0_RX buffer as busy and allow base handler to queue the buffer
-                EP0_RX_Busy = 1;
-            }
-            break;
-        case USB_EVT_SETUP: // reset the flag when new setup sequence starts
-        case USB_EVT_OUT:
-            // we received the packet so clear the flag
-            EP0_RX_Busy = 0;
-            break;
-    }
-    return EP0_Default_Handler(hUsb, data, event);
-}
-#endif
-
 // ---------------------------------------------------------------------------
 HRESULT CPU_USB_Initialize(int core)
 {
-    if (core >= MAX_USB_CORE || USB_ENABLED(core)) return S_FALSE;
+    //if (core >= MAX_USB_CORE || USB_ENABLED(core)) return S_FALSE;
+    if (core >= MAX_USB_CORE) return S_FALSE; // Keep serial port open with CDC driver
 
     USB_CONTROLLER_STATE *State = CPU_USB_GetState(core);
     const USB_ENDPOINT_DESCRIPTOR  *pEpDesc;
@@ -534,17 +406,6 @@ HRESULT CPU_USB_Initialize(int core)
     // Initialize USB stack
     ret = USB_InitStack(core);
     if (ret != RET_OK) return S_FALSE; // Exit if not succesful
-    USBD_HANDLE_T hUsb = USB_HANDLE(core);
-#ifdef USE_USB_PATCH
-    // Register EP0 patch
-    USB_CORE_CTRL_T* pCtrl = (USB_CORE_CTRL_T*)hUsb; // Convert the handle to control structure
-    EP0_Default_Handler = pCtrl->ep_event_hdlr[0]; // Retrieve the default EP0_OUT handler
-    pCtrl->ep_event_hdlr[0] = USB_EP0_Patch; // Set our patch routine as EP0_OUT handler
-#endif
-#ifdef USE_USB_CUSTOM
-    // Register EP0 class handler
-    USBD_RegisterClassHandler(*phUsb, USB_EP0_Handler, NULL);
-#endif
 
     // Set defaults for unused endpoints
     for (epNum = 1; epNum < State->EndpointCount; epNum++)
@@ -584,17 +445,15 @@ HRESULT CPU_USB_Initialize(int core)
         if ((pEpDesc->bmAttributes & 3) == USB_ENDPOINT_ATTRIBUTE_ISOCHRONOUS) return FALSE;
     }
 
-    // Configure endpoint handlers
-    USBD_RegisterEpHandler(hUsb, USB_EP_INDEX_IN(BULK_IN_EP), USB_EP_In_Handler, (void*)BULK_IN_EP);
-    USBD_RegisterEpHandler(hUsb, USB_EP_INDEX_OUT(BULK_OUT_EP), USB_EP_Out_Handler, (void*)BULK_OUT_EP);
+    // Configure CDC driver
+    ret = CDC_Init(core);
+    if (ret != RET_OK) return S_FALSE; // Exit if not succesful
 
-    // Enable interrupts and make soft connect
+    // Connect and enable interrupts
+    CPU_USB_ProtectPins(core, FALSE);
     CPU_INTC_ActivateInterrupt(USB_IRQ[core], USB_ISR[core], 0);
-    USBD_Connect(USB_HANDLE(core), 1); // Connect
     USB_ENABLED(core) = TRUE;
-#ifndef USE_USB_CUSTOM
     State->DeviceState = USB_DEVICE_STATE_CONFIGURED; // Config done by ROM stack
-#endif
 
     return S_OK;
 }
@@ -604,7 +463,9 @@ HRESULT CPU_USB_Uninitialize(int core)
 {
     if (core >= MAX_USB_CORE || !USB_ENABLED(core)) return S_FALSE;
 
-    // Make soft disconnect and disable interrupts
+#if 0 // Keep serial port open with CDC driver
+    // Disconnect and disable interrupts
+    CPU_USB_ProtectPins(core, TRUE);
     USBD_Connect(USB_HANDLE(core), 0); // Disconnect
     CPU_INTC_DeactivateInterrupt(USB_IRQ[core]);
 
@@ -615,8 +476,12 @@ HRESULT CPU_USB_Uninitialize(int core)
         LPC_CREG->CREG0 |= (1 << 5);; // Disable USB0 PHY
         LPC_CGU->PLL[CGU_USB_PLL].PLL_CTRL |= 1; // Disable USB PLL
     }
+    USB_REG(core)->USBCMD_D &= ~0x01;
+    USB_REG(core)->USBCMD_D = 0x02; // Reset controller
+	while (USB_REG(core)->USBCMD_D & 0x02) ;
     USB_STATE(core) = NULL;
     USB_ENABLED(core) = FALSE;
+#endif
 
     return S_OK;
 }
@@ -651,9 +516,27 @@ BOOL CPU_USB_StartOutput(USB_CONTROLLER_STATE* State, int epNum)
     int core = USB_CORE(hUsb);
     USB_PACKET64* Packet64;
     UINT8* dst = ep_in_data[core];
-    UINT16 cnt = 0;
+    UINT32 cnt = 0;
+
+    // Hold if buffer pending
+    if (ep_in_count[core] != 0) return FALSE;
+
+    // If payload missing, hold until flush to avoid host timeout at HS
+    Packet64 = USB_TxDequeue(State, epNum, FALSE);
+    if (Packet64->Size == sizeof(WP_Packet)
+            && ((memcmp(Packet64->Buffer, MARKER_DEBUGGER_V1, 7) == 0)
+                    || (memcmp(Packet64->Buffer, MARKER_PACKET_V1, 7) == 0)))
+    {
+        memcpy(dst, Packet64->Buffer, Packet64->Size);
+        int missing = ((WP_Packet*)dst)->m_size + sizeof(WP_Packet);
+        for (int i = 0; i < State->Queues[epNum]->NumberOfElements(); i++) {
+            missing -= (*State->Queues[epNum])[i]->Size;
+        }
+        if (missing != 0) return FALSE;
+    }
 
     // Copy packets to endpoint buffer
+    cnt = 0;
     while ((Packet64 = USB_TxDequeue(State, epNum, FALSE)) != NULL) // Peek
     {
         if ((cnt + Packet64->Size) > EP_MEM_SIZE) break;
@@ -698,6 +581,7 @@ BOOL CPU_USB_GetInterruptState()
 BOOL CPU_USB_ProtectPins(int core, BOOL On)
 {
     USB_CONTROLLER_STATE *State;
+    USBD_HANDLE_T hUsb = USB_HANDLE(core);
 
     GLOBAL_LOCK(irq);
 
@@ -713,12 +597,12 @@ BOOL CPU_USB_ProtectPins(int core, BOOL On)
                 State->Queues[epNum]->Initialize();
         }
         // Make soft disconnect and set detached state
-        USBD_Connect(USB_HANDLE(core), 0);
+        USBD_Connect(hUsb, 0); // Disconnect
         State->DeviceState = USB_DEVICE_STATE_DETACHED;
         USB_StateCallback(State);
     } else {
         // Make soft connect and set attached state
-        USBD_Connect(USB_HANDLE(core), 1); // Connect
+        USBD_Connect(hUsb, 1); // Connect
         State->DeviceState = USB_DEVICE_STATE_ATTACHED;
         USB_StateCallback(State);
     }

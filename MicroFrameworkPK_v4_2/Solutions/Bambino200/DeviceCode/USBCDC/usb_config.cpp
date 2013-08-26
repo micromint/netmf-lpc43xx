@@ -35,17 +35,40 @@
 #define     PRODUCT_NAME_INDEX      2
 #define     SERIAL_NUMBER_INDEX     0
 // device descriptor
-#define     VENDOR_ID               0x16D0
-#define     PRODUCT_ID              0x085A
-#define     MAX_EP0_SIZE            USB_MAX_DATA_PACKET_SIZE
+#define     VENDOR_ID               0x1FC9
+#define     PRODUCT_ID              0x2047
+#define     INT_IN_EP               3
+#define     BULK_IN_EP              1
+#define     BULK_OUT_EP             2
+#define     MAX_EP0_SIZE            64
 #define     MAX_EP_SIZE             USB_MAX_DATA_PACKET_SIZE
 //configuration descriptor
 #define     USB_MAX_CURRENT         (200/USB_CURRENT_UNIT)
-
 #define     USB_ATTRIBUTES          (USB_ATTRIBUTE_BASE | USB_ATTRIBUTE_SELF_POWER)
 
 // Configuration for extended descriptor
 #define OS_DESCRIPTOR_EX_VERSION            0x0100
+
+// Communication interface class code
+#define CDC_COMMUNICATION_INTERFACE_CLASS   0x02
+
+// bDescriptorType
+#define CDC_CS_INTERFACE                    0x24
+#define CDC_CS_ENDPOINT                     0x25
+
+// bDescriptorSubtype
+#define CDC_HEADER                          0x00
+#define CDC_CALL_MANAGEMENT                 0x01
+#define CDC_ABSTRACT_CONTROL_MANAGEMENT     0x02
+#define CDC_UNION                           0x06
+
+// Data interface class code
+#define CDC_DATA_INTERFACE_CLASS            0x0A
+
+#define USB_DEVICE_CLASS_COMMUNICATIONS     0x02
+
+#define CDC_CCI_NUM                         0
+#define CDC_DCI_NUM                         1
 
 /////////////////////////////////////////////////////////////
 // The following structure defines the USB descriptor
@@ -62,7 +85,9 @@ ADS_PACKED struct GNU_PACKED USB_DYNAMIC_CONFIGURATION
     USB_CONFIGURATION_DESCRIPTOR config;
       USB_INTERFACE_DESCRIPTOR   itfc0;
         USB_ENDPOINT_DESCRIPTOR  ep1;
+      USB_INTERFACE_DESCRIPTOR   itfc1;
         USB_ENDPOINT_DESCRIPTOR  ep2;
+        USB_ENDPOINT_DESCRIPTOR  ep3;
     USB_STRING_DESCRIPTOR_HEADER manHeader;
       USB_STRING_CHAR            manString[MANUFACTURER_NAME_SIZE];
     USB_STRING_DESCRIPTOR_HEADER prodHeader;
@@ -91,7 +116,7 @@ const struct USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration =
         USB_DEVICE_DESCRIPTOR_LENGTH,       // Length of device descriptor
         USB_DEVICE_DESCRIPTOR_TYPE,         // USB device descriptor type
         0x0110,                             // USB Version 1.10 (BCD)
-        0,                                  // Device class (none)
+        USB_DEVICE_CLASS_COMMUNICATIONS,    // Device class (CDC)
         0,                                  // Device subclass (none)
         0,                                  // Device protocol (none)
         MAX_EP0_SIZE,                       // Endpoint 0 size
@@ -112,6 +137,8 @@ const struct USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration =
             sizeof(USB_CONFIGURATION_DESCRIPTOR)
                 + sizeof(USB_INTERFACE_DESCRIPTOR)
                 + sizeof(USB_ENDPOINT_DESCRIPTOR)
+                + sizeof(USB_INTERFACE_DESCRIPTOR)
+                + sizeof(USB_ENDPOINT_DESCRIPTOR)
                 + sizeof(USB_ENDPOINT_DESCRIPTOR)
         },
         USB_CONFIGURATION_DESCRIPTOR_LENGTH,
@@ -119,8 +146,10 @@ const struct USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration =
         USB_CONFIGURATION_DESCRIPTOR_LENGTH
             + sizeof(USB_INTERFACE_DESCRIPTOR)
             + sizeof(USB_ENDPOINT_DESCRIPTOR)
+            + sizeof(USB_INTERFACE_DESCRIPTOR)
+            + sizeof(USB_ENDPOINT_DESCRIPTOR)
             + sizeof(USB_ENDPOINT_DESCRIPTOR),
-        1,                                          // Number of interfaces
+        2,                                          // Number of interfaces
         1,                                          // Number of this configuration
         0,                                          // Config descriptor string index (none)
         USB_ATTRIBUTES,                             // Config attributes
@@ -131,12 +160,12 @@ const struct USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration =
     {
         sizeof(USB_INTERFACE_DESCRIPTOR),
         USB_INTERFACE_DESCRIPTOR_TYPE,
-        0,                                          // Interface number
+        CDC_CCI_NUM,                                // Interface number
         0,                                          // Alternate number (main)
-        2,                                          // Number of endpoints
-        0xFF,                                       // Interface class (vendor)
+        1,                                          // Number of endpoints
+        CDC_COMMUNICATION_INTERFACE_CLASS,          // Interface class (CDC)
         1,                                          // Interface subclass
-        1,                                          // Interface protocol
+        0,                                          // Interface protocol
         0                                           // Interface descriptor string index (none)
     },
 
@@ -144,20 +173,43 @@ const struct USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration =
     {
         sizeof(USB_ENDPOINT_DESCRIPTOR),
         USB_ENDPOINT_DESCRIPTOR_TYPE,
-        USB_ENDPOINT_DIRECTION_IN + 1,
-        USB_ENDPOINT_ATTRIBUTE_BULK,
-        MAX_EP_SIZE,                                // Endpoint 1 packet size
-        0                                           // Endpoint 1 interval        
+        USB_ENDPOINT_DIRECTION_IN + INT_IN_EP,
+        USB_ENDPOINT_ATTRIBUTE_INTERRUPT,
+        0x0010,                                     // Endpoint 1 packet size
+        2                                           // Endpoint 1 interval        
+    },
+
+    // Interface 1 descriptor
+    {
+        sizeof(USB_INTERFACE_DESCRIPTOR),
+        USB_INTERFACE_DESCRIPTOR_TYPE,
+        CDC_DCI_NUM,                                // Interface number
+        0,                                          // Alternate number (main)
+        2,                                          // Number of endpoints
+        CDC_DATA_INTERFACE_CLASS,                   // Interface class (data interface)
+        0,                                          // Interface subclass
+        0,                                          // Interface protocol
+        0                                           // Interface descriptor string index (none)
     },
 
     // Endpoint 2 descriptor
     {
         sizeof(USB_ENDPOINT_DESCRIPTOR),
         USB_ENDPOINT_DESCRIPTOR_TYPE,
-        USB_ENDPOINT_DIRECTION_OUT + 2,
+        USB_ENDPOINT_DIRECTION_IN + BULK_IN_EP,
         USB_ENDPOINT_ATTRIBUTE_BULK,
         MAX_EP_SIZE,                                // Endpoint 2 packet size
-        0                                           // Endpoint 2 interval
+        0                                           // Endpoint 2 interval        
+    },
+
+    // Endpoint 3 descriptor
+    {
+        sizeof(USB_ENDPOINT_DESCRIPTOR),
+        USB_ENDPOINT_DESCRIPTOR_TYPE,
+        USB_ENDPOINT_DIRECTION_OUT + BULK_OUT_EP,
+        USB_ENDPOINT_ATTRIBUTE_BULK,
+        MAX_EP_SIZE,                                // Endpoint 3 packet size
+        0                                           // Endpoint 3 interval
     },
 
     // Manufacturer name string descriptor

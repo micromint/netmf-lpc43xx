@@ -22,6 +22,7 @@
 -I..\..\..\..\DeviceCode\Cores\arm\Include
 -I..\..\..\..\DeviceCode\Targets\Native\LPC43XX
 -I..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode
+-I..\..\..\..\DeviceCode\pal\OneWire\DallasSemi
 -I..\..\..\..\DeviceCode\pal\PKCS11
 -I..\..\..\..\DeviceCode\pal\rtip
 -I..\..\..\..\DeviceCode\pal\rtip\rtpcore
@@ -32,6 +33,10 @@
 -I..\..\..\..\CLR\Libraries\SecurityPkcs11
 -I..\..\..\..\CLR\Libraries\SPOT
 -I..\..\..\..\CLR\Libraries\SPOT_Hardware
+-I..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_PWM
+-I..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_Serial
+-I..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_USB
+-I..\..\..\..\CLR\Libraries\SPOT_IO
 -I..\..\..\..\CLR\Libraries\SPOT_Graphics
 -I..\..\..\..\CLR\Libraries\SPOT_Net
 -I..\..\..\..\CLR\Libraries\SPOT_Net_Security

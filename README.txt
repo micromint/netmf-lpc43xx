@@ -1,6 +1,6 @@
 NetMF port to NXP LPC43xx
 =========================
-Updated: 07/05/13
+Updated: 08/26/13
 
 The NXP LPC43xx microcontrollers are the first to include multiple Cortex-M
 cores in a single microcontroller package. This port allows NetMF developers
@@ -27,12 +27,19 @@ Compatibility
 * This port has been tested with the following boards:
     Board                    MCU        RAM/Flash
     Micromint Bambino 200    LPC4330    264K SRAM/4 MB SPIFI flash
+	
+* The USB driver currently uses a CDC class while we correct an issue with the
+  custom class used for WinUSB. The board will enumerate as a COM port. Drivers
+  are in the Micromint Bambino Wiki (wiki.micromint.com).
+
+* This port has been developed and tested with the MDK 4.71. We will be
+  supporting the GCC CodeRed toolchain in early September.
 
 * Ethernet, USB and microSD filesystem drivers will be available when the
   Bambino 200E is released.
 
-* This port has been developed and tested with the MDK 4.71. Within two
-  months we will be supporting the GCC CodeRed toolchain.
+* This port has been developed and tested with the MDK 4.71. We will be
+  supporting the GCC CodeRed toolchain in early September.
 
 Notes
 -----

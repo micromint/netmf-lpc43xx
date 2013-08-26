@@ -12,6 +12,10 @@ LR_FLASH 0x14000000 ABSOLUTE
     {
         * (SectionForConfig)
     }
+    ER_SLAVE_FLASH 0x14064000 FIXED 0x0000C000
+    {
+        * (SectionForSlaveFlash)
+    }
     ER_VECTORS 0x10000000 ABSOLUTE UNINIT
     {
         * (SectionForVectors)
@@ -31,6 +35,10 @@ LR_FLASH 0x14000000 ABSOLUTE
     ER_STACK 0x1008E000 ABSOLUTE UNINIT
     {
         * (SectionForStack)
+    }
+    ER_SLAVE_RAM 0x20000000 ABSOLUTE UNINIT
+    {
+        * (SectionForSlaveRam)
     }
     ER_DMA 0x20008000 ABSOLUTE
     {

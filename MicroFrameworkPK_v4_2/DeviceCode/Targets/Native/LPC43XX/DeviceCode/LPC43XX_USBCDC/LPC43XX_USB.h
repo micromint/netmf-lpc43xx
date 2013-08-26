@@ -504,7 +504,7 @@ typedef struct USBD_CORE_API
                void* data);
   ErrorCode_t (*RegisterEpHandler)(USBD_HANDLE_T hUsb, uint32_t ep_index,
                USB_EP_HANDLER_T pfn, void* data);
-  void (*SetupStage )(USBD_HANDLE_T hUsb);
+  void (*SetupStage)(USBD_HANDLE_T hUsb);
   void (*DataInStage)(USBD_HANDLE_T hUsb);
   void (*DataOutStage)(USBD_HANDLE_T hUsb);
   void (*StatusInStage)(USBD_HANDLE_T hUsb);
@@ -527,7 +527,7 @@ typedef struct _USB_CORE_CTRL_T  USB_CORE_CTRL_T;
 typedef struct _USB_EP_DATA
 {
   uint8_t  *pData;
-  uint16_t   Count;
+  uint16_t  Count;
 } USB_EP_DATA;
 
 #define USB_MAX_IF_NUM  8
@@ -642,7 +642,7 @@ typedef struct USBD_HW_API
   void (*Connect)(USBD_HANDLE_T hUsb, uint32_t con);
   void (*ISR)(USBD_HANDLE_T hUsb);
   void  (*Reset)(USBD_HANDLE_T hUsb);
-  void  (*ForceFullSpeed )(USBD_HANDLE_T hUsb, uint32_t cfg);
+  void  (*ForceFullSpeed)(USBD_HANDLE_T hUsb, uint32_t cfg);
   void  (*WakeUpCfg)(USBD_HANDLE_T hUsb, uint32_t  cfg);
   void  (*SetAddress)(USBD_HANDLE_T hUsb, uint32_t adr);
   void  (*Configure)(USBD_HANDLE_T hUsb, uint32_t  cfg);
@@ -683,11 +683,11 @@ typedef struct USBD_MSC_INIT_PARAM
   uint8_t* intf_desc;
 
   /* user defined functions */
-  void (*MSC_Write)( uint32_t offset, uint8_t** src, uint32_t length);
-  void (*MSC_Read)( uint32_t offset, uint8_t** dst, uint32_t length);
-  ErrorCode_t (*MSC_Verify)( uint32_t offset, uint8_t buf[], uint32_t length);
-  void (*MSC_GetWriteBuf)( uint32_t offset, uint8_t** buff_adr, uint32_t length);
-  ErrorCode_t (*MSC_Ep0_Hdlr) (USBD_HANDLE_T hUsb, void* data, uint32_t event);
+  void (*MSC_Write)(uint32_t offset, uint8_t** src, uint32_t length);
+  void (*MSC_Read)(uint32_t offset, uint8_t** dst, uint32_t length);
+  ErrorCode_t (*MSC_Verify)(uint32_t offset, uint8_t buf[], uint32_t length);
+  void (*MSC_GetWriteBuf)(uint32_t offset, uint8_t** buff_adr, uint32_t length);
+  ErrorCode_t (*MSC_Ep0_Hdlr)(USBD_HANDLE_T hUsb, void* data, uint32_t event);
 } USBD_MSC_INIT_PARAM_T;
 
 /* MSC class API functions structure */
@@ -750,11 +750,11 @@ typedef struct _MSC_CTRL_T
   uint32_t  MemorySize;
 
   /* user defined functions */
-  void (*MSC_Write)( uint32_t offset, uint8_t** src, uint32_t length);
-  void (*MSC_Read)( uint32_t offset, uint8_t** dst, uint32_t length);
-  ErrorCode_t (*MSC_Verify)( uint32_t offset, uint8_t src[], uint32_t length);
+  void (*MSC_Write)(uint32_t offset, uint8_t** src, uint32_t length);
+  void (*MSC_Read)(uint32_t offset, uint8_t** dst, uint32_t length);
+  ErrorCode_t (*MSC_Verify)(uint32_t offset, uint8_t src[], uint32_t length);
   /* optional call back for MSC_Write optimization */
-  void (*MSC_GetWriteBuf)( uint32_t offset, uint8_t** buff_adr, uint32_t length);
+  void (*MSC_GetWriteBuf)(uint32_t offset, uint8_t** buff_adr, uint32_t length);
 }USB_MSC_CTRL_T;
 
 /* ---------- USBD_DFUUSER_H ---------- */
@@ -771,12 +771,12 @@ typedef struct USBD_DFU_INIT_PARAM
   uint8_t* intf_desc;
 
   /* user defined functions */
-  uint8_t (*DFU_Write)( uint32_t block_num, uint8_t** src, uint32_t length,
+  uint8_t (*DFU_Write)(uint32_t block_num, uint8_t** src, uint32_t length,
                         uint8_t* bwPollTimeout);
-  uint32_t (*DFU_Read)( uint32_t block_num, uint8_t** dst, uint32_t length);
+  uint32_t (*DFU_Read)(uint32_t block_num, uint8_t** dst, uint32_t length);
   void (*DFU_Done)(void);
   void (*DFU_Detach)(USBD_HANDLE_T hUsb);
-  ErrorCode_t (*DFU_Ep0_Hdlr) (USBD_HANDLE_T hUsb, void* data, uint32_t event);
+  ErrorCode_t (*DFU_Ep0_Hdlr)(USBD_HANDLE_T hUsb, void* data, uint32_t event);
 } USBD_DFU_INIT_PARAM_T;
 
 
@@ -820,16 +820,16 @@ typedef struct _USBD_DFU_CTRL_T
   uint8_t* xfr_buf;
   USB_DFU_FUNC_DESCRIPTOR* dfu_desc;
 
-  USB_CORE_CTRL_T*  pUsbCtrl;
+  USB_CORE_CTRL_T* pUsbCtrl;
   /* user defined functions */
   /* return DFU_STATUS_ values defined in mw_usbd_dfu.h */
-  uint8_t (*DFU_Write)( uint32_t block_num, uint8_t** src, uint32_t length, uint8_t* bwPollTimeout);
+  uint8_t (*DFU_Write)(uint32_t block_num, uint8_t** src, uint32_t length, uint8_t* bwPollTimeout);
   /* return
   * DFU_STATUS_ : values defined in mw_usbd_dfu.h in case of errors
   * 0 : If end of memory reached
   * length : Amount of data copied to destination buffer
   */
-  uint32_t (*DFU_Read)( uint32_t block_num, uint8_t** dst, uint32_t length);
+  uint32_t (*DFU_Read)(uint32_t block_num, uint8_t** dst, uint32_t length);
   /* callback called after download is finished */
   void (*DFU_Done)(void);
   /* callback called after USB_REQ_DFU_DETACH is recived */
@@ -861,24 +861,24 @@ typedef struct USBD_HID_INIT_PARAM
 
   /* user defined functions */
   /* required functions */
-  ErrorCode_t (*HID_GetReport)( USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
+  ErrorCode_t (*HID_GetReport)(USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
                uint8_t** pBuffer, uint16_t* length);
-  ErrorCode_t (*HID_SetReport)( USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
+  ErrorCode_t (*HID_SetReport)(USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
                uint8_t** pBuffer, uint16_t length);
   /* optional functions */
-  ErrorCode_t (*HID_GetPhysDesc)( USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
+  ErrorCode_t (*HID_GetPhysDesc)(USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
                uint8_t** pBuf, uint16_t* length);
-  ErrorCode_t (*HID_SetIdle)( USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
+  ErrorCode_t (*HID_SetIdle)(USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
                uint8_t idleTime);
-  ErrorCode_t (*HID_SetProtocol)( USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
+  ErrorCode_t (*HID_SetProtocol)(USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
                uint8_t protocol);
 
-  ErrorCode_t (*HID_EpIn_Hdlr) (USBD_HANDLE_T hUsb, void* data, uint32_t event);
-  ErrorCode_t (*HID_EpOut_Hdlr) (USBD_HANDLE_T hUsb, void* data, uint32_t event);
+  ErrorCode_t (*HID_EpIn_Hdlr)(USBD_HANDLE_T hUsb, void* data, uint32_t event);
+  ErrorCode_t (*HID_EpOut_Hdlr)(USBD_HANDLE_T hUsb, void* data, uint32_t event);
   /* user overridable function */
   ErrorCode_t (*HID_GetReportDesc)(USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
                uint8_t** pBuf, uint16_t* length);
-  ErrorCode_t (*HID_Ep0_Hdlr) (USBD_HANDLE_T hUsb, void* data, uint32_t event);
+  ErrorCode_t (*HID_Ep0_Hdlr)(USBD_HANDLE_T hUsb, void* data, uint32_t event);
 } USBD_HID_INIT_PARAM_T;
 
 /* HID class API functions structure */
@@ -904,26 +904,26 @@ typedef struct _HID_CTRL_T {
   uint8_t epout_adr;               /* OUT interrupt endpoint */
 
   /* user defined functions */
-  ErrorCode_t (*HID_GetReport)( USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
+  ErrorCode_t (*HID_GetReport)(USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
                uint8_t** pBuffer, uint16_t* length);
-  ErrorCode_t (*HID_SetReport)( USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
+  ErrorCode_t (*HID_SetReport)(USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
                uint8_t** pBuffer, uint16_t length);
-  ErrorCode_t (*HID_GetPhysDesc)( USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
+  ErrorCode_t (*HID_GetPhysDesc)(USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
                uint8_t** pBuf, uint16_t* length);
-  ErrorCode_t (*HID_SetIdle)( USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
+  ErrorCode_t (*HID_SetIdle)(USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
                uint8_t idleTime);
-  ErrorCode_t (*HID_SetProtocol)( USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
+  ErrorCode_t (*HID_SetProtocol)(USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
                uint8_t protocol);
 
   /* virtual overridable functions */
   ErrorCode_t (*HID_GetReportDesc)(USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
                uint8_t** pBuf, uint16_t* length);
-}USB_HID_CTRL_T;
+} USB_HID_CTRL_T;
 
 /* ---------- USBD_CDCUSER_H ---------- */
 /* Communication Device Class (CDC) Function Driver */
 
-/* Buffer for incomming data on USB port */
+/* Buffer for incoming data on USB port */
 /* Buffer masks */
 #define CDC_BUF_SIZE               (128)  /* Output buffer in bytes (power 2) */
                                           /* large enough for file transfer */
@@ -949,28 +949,28 @@ typedef struct USBD_CDC_INIT_PARAM
 
   /* user defined functions */
   /* required functions */
-  ErrorCode_t (*CIC_GetRequest)( USBD_HANDLE_T hHid, USBD_SETUP_PACKET* pSetup,
+  ErrorCode_t (*CIC_GetRequest)(USBD_HANDLE_T hCdc, USBD_SETUP_PACKET* pSetup,
                uint8_t** pBuffer, uint16_t* length); 
-  ErrorCode_t (*CIC_SetRequest)( USBD_HANDLE_T hCdc, USBD_SETUP_PACKET* pSetup,
+  ErrorCode_t (*CIC_SetRequest)(USBD_HANDLE_T hCdc, USBD_SETUP_PACKET* pSetup,
                uint8_t** pBuffer, uint16_t length);
-  ErrorCode_t (*CDC_BulkIN_Hdlr) (USBD_HANDLE_T hUsb, void* data, uint32_t event);
-  ErrorCode_t (*CDC_BulkOUT_Hdlr) (USBD_HANDLE_T hUsb, void* data,
+  ErrorCode_t (*CDC_BulkIN_Hdlr)(USBD_HANDLE_T hUsb, void* data, uint32_t event);
+  ErrorCode_t (*CDC_BulkOUT_Hdlr)(USBD_HANDLE_T hUsb, void* data,
                uint32_t event);
-  ErrorCode_t (*SendEncpsCmd) (USBD_HANDLE_T hCDC, uint8_t* buffer, uint16_t len);
-  ErrorCode_t (*GetEncpsResp) (USBD_HANDLE_T hCDC, uint8_t** buffer,
+  ErrorCode_t (*SendEncpsCmd)(USBD_HANDLE_T hCDC, uint8_t* buffer, uint16_t len);
+  ErrorCode_t (*GetEncpsResp)(USBD_HANDLE_T hCDC, uint8_t** buffer,
                uint16_t* len);
-  ErrorCode_t (*SetCommFeature) (USBD_HANDLE_T hCDC, uint16_t feature,
+  ErrorCode_t (*SetCommFeature)(USBD_HANDLE_T hCDC, uint16_t feature,
                uint8_t* buffer, uint16_t len);
-  ErrorCode_t (*GetCommFeature) (USBD_HANDLE_T hCDC, uint16_t feature,
+  ErrorCode_t (*GetCommFeature)(USBD_HANDLE_T hCDC, uint16_t feature,
                uint8_t** pBuffer, uint16_t* len);
-  ErrorCode_t (*ClrCommFeature) (USBD_HANDLE_T hCDC, uint16_t feature);
-  ErrorCode_t (*SetCtrlLineState) (USBD_HANDLE_T hCDC, uint16_t state);
-  ErrorCode_t (*SendBreak) (USBD_HANDLE_T hCDC, uint16_t mstime);
-  ErrorCode_t (*SetLineCode) (USBD_HANDLE_T hCDC, CDC_LINE_CODING* line_coding);
+  ErrorCode_t (*ClrCommFeature)(USBD_HANDLE_T hCDC, uint16_t feature);
+  ErrorCode_t (*SetCtrlLineState)(USBD_HANDLE_T hCDC, uint16_t state);
+  ErrorCode_t (*SendBreak)(USBD_HANDLE_T hCDC, uint16_t mstime);
+  ErrorCode_t (*SetLineCode)(USBD_HANDLE_T hCDC, CDC_LINE_CODING* line_coding);
   /* optional functions */
-  ErrorCode_t (*CDC_InterruptEP_Hdlr) (USBD_HANDLE_T hUsb, void* data,
+  ErrorCode_t (*CDC_InterruptEP_Hdlr)(USBD_HANDLE_T hUsb, void* data,
                uint32_t event);
-  ErrorCode_t (*CDC_Ep0_Hdlr) (USBD_HANDLE_T hUsb, void* data, uint32_t event);
+  ErrorCode_t (*CDC_Ep0_Hdlr)(USBD_HANDLE_T hUsb, void* data, uint32_t event);
 } USBD_CDC_INIT_PARAM_T;
 
 /* CDC class API functions structure */
@@ -1000,20 +1000,20 @@ typedef struct _CDC_CTRL_T
   uint8_t epint_num;               /* Interrupt IN endpoint number */
 
   /* user defined functions */
-  ErrorCode_t (*SendEncpsCmd) (USBD_HANDLE_T hCDC, uint8_t* buffer, uint16_t len);
-  ErrorCode_t (*GetEncpsResp) (USBD_HANDLE_T hCDC, uint8_t** buffer, uint16_t* len);
-  ErrorCode_t (*SetCommFeature) (USBD_HANDLE_T hCDC, uint16_t feature, uint8_t* buffer, uint16_t len);
-  ErrorCode_t (*GetCommFeature) (USBD_HANDLE_T hCDC, uint16_t feature, uint8_t** pBuffer, uint16_t* len);
-  ErrorCode_t (*ClrCommFeature) (USBD_HANDLE_T hCDC, uint16_t feature);
-  ErrorCode_t (*SetCtrlLineState) (USBD_HANDLE_T hCDC, uint16_t state);
-  ErrorCode_t (*SendBreak) (USBD_HANDLE_T hCDC, uint16_t state);
-  ErrorCode_t (*SetLineCode) (USBD_HANDLE_T hCDC, CDC_LINE_CODING* line_coding);
+  ErrorCode_t (*SendEncpsCmd)(USBD_HANDLE_T hCDC, uint8_t* buffer, uint16_t len);
+  ErrorCode_t (*GetEncpsResp)(USBD_HANDLE_T hCDC, uint8_t** buffer, uint16_t* len);
+  ErrorCode_t (*SetCommFeature)(USBD_HANDLE_T hCDC, uint16_t feature, uint8_t* buffer, uint16_t len);
+  ErrorCode_t (*GetCommFeature)(USBD_HANDLE_T hCDC, uint16_t feature, uint8_t** pBuffer, uint16_t* len);
+  ErrorCode_t (*ClrCommFeature)(USBD_HANDLE_T hCDC, uint16_t feature);
+  ErrorCode_t (*SetCtrlLineState)(USBD_HANDLE_T hCDC, uint16_t state);
+  ErrorCode_t (*SendBreak)(USBD_HANDLE_T hCDC, uint16_t state);
+  ErrorCode_t (*SetLineCode)(USBD_HANDLE_T hCDC, CDC_LINE_CODING* line_coding);
 
   /* virtual functions */
-  ErrorCode_t (*CIC_GetRequest)( USBD_HANDLE_T hCdc, USBD_SETUP_PACKET* pSetup, uint8_t** pBuffer, uint16_t* length);
-  ErrorCode_t (*CIC_SetRequest)( USBD_HANDLE_T hCdc, USBD_SETUP_PACKET* pSetup, uint8_t** pBuffer, uint16_t length);
+  ErrorCode_t (*CIC_GetRequest)(USBD_HANDLE_T hCdc, USBD_SETUP_PACKET* pSetup, uint8_t** pBuffer, uint16_t* length);
+  ErrorCode_t (*CIC_SetRequest)(USBD_HANDLE_T hCdc, USBD_SETUP_PACKET* pSetup, uint8_t** pBuffer, uint16_t length);
 
-}USB_CDC_CTRL_T;
+} USB_CDC_CTRL_T;
 
 void UsbdCdc_IO_Buffer_Sync_Task(void);
 void UsbdCdc_SendData(uint8_t* buffer, uint32_t cnt);
@@ -1051,7 +1051,7 @@ typedef volatile struct
   volatile uint32_t buffer3;
   volatile uint32_t buffer4;
   volatile uint32_t reserved;
-}  DTD_T;
+} DTD_T;
 
 /* dQH  Queue Head */
 typedef volatile struct
@@ -1068,23 +1068,22 @@ typedef volatile struct
   volatile uint32_t reserved;
   volatile uint32_t setup[2];
   volatile uint32_t gap[4];
-}  DQH_T;
-
+} DQH_T;
 
 /* bit defines for USBCMD register */
-#define USBCMD_RS     _BIT(0)
-#define USBCMD_RST    _BIT(1)
-#define USBCMD_ATDTW  _BIT(12)
-#define USBCMD_SUTW   _BIT(13)
+#define USBCMD_RS       _BIT(0)
+#define USBCMD_RST      _BIT(1)
+#define USBCMD_ATDTW    _BIT(12)
+#define USBCMD_SUTW     _BIT(13)
 
 /* bit defines for USBSTS register */
-#define USBSTS_UI   _BIT(0)
-#define USBSTS_UEI  _BIT(1)
-#define USBSTS_PCI  _BIT(2)
-#define USBSTS_URI  _BIT(6)
-#define USBSTS_SRI  _BIT(7)
-#define USBSTS_SLI  _BIT(8)
-#define USBSTS_NAKI _BIT(16)
+#define USBSTS_UI       _BIT(0)
+#define USBSTS_UEI      _BIT(1)
+#define USBSTS_PCI      _BIT(2)
+#define USBSTS_URI      _BIT(6)
+#define USBSTS_SRI      _BIT(7)
+#define USBSTS_SLI      _BIT(8)
+#define USBSTS_NAKI     _BIT(16)
 
 /* bit defines for DEVICEADDR register */
 #define USBDEV_ADDR_AD  _BIT(24)
@@ -1111,38 +1110,38 @@ typedef volatile struct
 #define USB_EP_BITPOS(n) (((n) & 0x80)? (0x10 | ((n) & 0x7)) : ((n) & 0x7))
 
 /* bit defines EPcontrol registers*/
-#define EPCTRL_RXS        _BIT(0)
-#define EPCTRL_RX_TYPE(n) _SBF(2,((n) & 0x3))
-#define EPCTRL_RX_CTL     _SBF(2,0)
-#define EPCTRL_RX_ISO     _SBF(2,1)
-#define EPCTRL_RX_BLK     _SBF(2,2)
-#define EPCTRL_RXI        _BIT(5)
-#define EPCTRL_RXR        _BIT(6)
-#define EPCTRL_RXE        _BIT(7)
-#define EPCTRL_TXS        _BIT(16)
-#define EPCTRL_TX_TYPE(n) _SBF(18,((n) & 0x3))
-#define EPCTRL_TX_CTL     _SBF(18,0)
-#define EPCTRL_TX_ISO     _SBF(18,1)
-#define EPCTRL_TX_BLK     _SBF(18,2)
-#define EPCTRL_TX_INT     _SBF(18,3)
-#define EPCTRL_TXI        _BIT(21)
-#define EPCTRL_TXR        _BIT(22)
-#define EPCTRL_TXE        _BIT(23)
+#define EPCTRL_RXS          _BIT(0)
+#define EPCTRL_RX_TYPE(n)   _SBF(2,((n) & 0x3))
+#define EPCTRL_RX_CTL       _SBF(2,0)
+#define EPCTRL_RX_ISO       _SBF(2,1)
+#define EPCTRL_RX_BLK       _SBF(2,2)
+#define EPCTRL_RXI          _BIT(5)
+#define EPCTRL_RXR          _BIT(6)
+#define EPCTRL_RXE          _BIT(7)
+#define EPCTRL_TXS          _BIT(16)
+#define EPCTRL_TX_TYPE(n)   _SBF(18,((n) & 0x3))
+#define EPCTRL_TX_CTL       _SBF(18,0)
+#define EPCTRL_TX_ISO       _SBF(18,1)
+#define EPCTRL_TX_BLK       _SBF(18,2)
+#define EPCTRL_TX_INT       _SBF(18,3)
+#define EPCTRL_TXI          _BIT(21)
+#define EPCTRL_TXR          _BIT(22)
+#define EPCTRL_TXE          _BIT(23)
 
 /* dQH field and bit defines */
 /* Temp fixed on max, should be taken out of table */
-#define QH_MAX_CTRL_PAYLOAD       0x03ff
-#define QH_MAX_PKT_LEN_POS        16
-#define QH_MAXP(n)                _SBF(16,((n) & 0x3FF))
-#define QH_IOS                    _BIT(15)
-#define QH_ZLT                    _BIT(29)
-#define QH_MULT(n)               _SBF(30,((n) & 0x3))
+#define QH_MAX_CTRL_PAYLOAD 0x03ff
+#define QH_MAX_PKT_LEN_POS  16
+#define QH_MAXP(n)          _SBF(16,((n) & 0x3FF))
+#define QH_IOS              _BIT(15)
+#define QH_ZLT              _BIT(29)
+#define QH_MULT(n)          _SBF(30,((n) & 0x3))
 
 /* dTD field and bit defines */
-#define TD_NEXT_TERMINATE         _BIT(0)
-#define TD_IOC                    _BIT(15)
-#define TD_ACTIVE                 _BIT(7)
-#define TD_MULTO(n)               _SBF(10,((n) & 0x3))
+#define TD_NEXT_TERMINATE   _BIT(0)
+#define TD_IOC              _BIT(15)
+#define TD_ACTIVE           _BIT(7)
+#define TD_MULTO(n)         _SBF(10,((n) & 0x3))
 
 /* ---------- USBD_ROM_API_H ---------- */
 /* USBD API functions structure */
@@ -1177,6 +1176,7 @@ typedef struct USBD_API
 
 #define USBD_ClrStallEP            USBD_API->hw->ClrStallEP
 #define USBD_ConfigEP              USBD_API->hw->ConfigEP
+#define USBD_DisableEP             USBD_API->hw->DisableEP
 #define USBD_EnableEP              USBD_API->hw->EnableEP
 #define USBD_ReadEP                USBD_API->hw->ReadEP
 #define USBD_ReadReqEP             USBD_API->hw->ReadReqEP

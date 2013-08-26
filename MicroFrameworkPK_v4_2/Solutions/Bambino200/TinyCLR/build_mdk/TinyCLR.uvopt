@@ -122,30 +122,15 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
-          <Key>DLGTARM</Key>
-          <Name>(1010=-1,-1,-1,-1,0)(1007=-1,-1,-1,-1,0)(1008=-1,-1,-1,-1,0)(1009=-1,-1,-1,-1,0)(1012=-1,-1,-1,-1,0)</Name>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
-          <Key>ARMDBGFLAGS</Key>
-          <Name></Name>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
-          <Key>DLGUARM</Key>
-          <Name>(105=-1,-1,-1,-1,0)</Name>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
           <Key>UL2CM3</Key>
-          <Name>-UV0168AVR -O910 -S0 -C0 -P00 -N00("ARM CoreSight JTAG-DP") -D00(4BA00477) -L00(4) -N01("ARM CoreSight JTAG-DP") -D01(0BA01477) -L01(4) -TO18 -TC10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO7 -FD10000000 -FC8000 -FN1 -FF0LPC18xx43xx_S25FL032 -FS014000000 -FL0400000</Name>
+          <Name>-UV0010M9E -O910 -S0 -C0 -P00 -N00("ARM CoreSight JTAG-DP") -D00(4BA00477) -L00(4) -N01("ARM CoreSight JTAG-DP") -D01(0BA01477) -L01(4) -TO18 -TC10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO3 -FD10000000 -FC8000 -FN1 -FF0LPC18xx43xx_S25FL032 -FS014000000 -FL0400000</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
       <Breakpoint>
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>385</LineNumber>
+          <LineNumber>453</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -154,7 +139,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>C:\MicroFrameworkPK_v4_2\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_USB\LPC43XX_USB.cpp</Filename>
+          <Filename>C:\MicroFrameworkPK_v4_2\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_USBCDC\LPC43XX_USB.cpp</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
@@ -165,12 +150,12 @@
       <DebugFlag>
         <trace>0</trace>
         <periodic>0</periodic>
-        <aLwin>1</aLwin>
+        <aLwin>0</aLwin>
         <aCover>0</aCover>
         <aSer1>0</aSer1>
         <aSer2>0</aSer2>
         <aPa>0</aPa>
-        <viewmode>1</viewmode>
+        <viewmode>0</viewmode>
         <vrSel>0</vrSel>
         <aSym>0</aSym>
         <aTbox>0</aTbox>
@@ -296,7 +281,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGTARM</Key>
-          <Name>(1010=-1,-1,-1,-1,0)(1007=-1,-1,-1,-1,0)(1008=-1,-1,-1,-1,0)(1009=-1,-1,-1,-1,0)(1012=-1,-1,-1,-1,0)</Name>
+          <Name>(1010=-1,-1,-1,-1,0)(1007=-1,-1,-1,-1,0)(1008=-1,-1,-1,-1,0)(1009=317,230,551,768,0)(1012=-1,-1,-1,-1,0)</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -311,14 +296,14 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>UL2CM3</Key>
-          <Name>-UV0168AVR -O910 -S0 -C0 -P00 -N00("ARM CoreSight JTAG-DP") -D00(4BA00477) -L00(4) -N01("ARM CoreSight JTAG-DP") -D01(0BA01477) -L01(4) -TO18 -TC10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO7 -FD10000000 -FC8000 -FN1 -FF0LPC18xx43xx_S25FL032 -FS014000000 -FL0400000</Name>
+          <Name>-UV0010M9E -O910 -S0 -C0 -P00 -N00("ARM CoreSight JTAG-DP") -D00(4BA00477) -L00(4) -N01("ARM CoreSight JTAG-DP") -D01(0BA01477) -L01(4) -TO18 -TC10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO3 -FD10000000 -FC8000 -FN1 -FF0LPC18xx43xx_S25FL032 -FS014000000 -FL0400000</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
       <Breakpoint>
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>385</LineNumber>
+          <LineNumber>453</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -327,11 +312,39 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>0</BreakIfRCount>
-          <Filename>C:\MicroFrameworkPK_v4_2\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_USB\LPC43XX_USB.cpp</Filename>
+          <Filename>C:\MicroFrameworkPK_v4_2\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_USBCDC\LPC43XX_USB.cpp</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
       </Breakpoint>
+      <MemoryWindow1>
+        <Mm>
+          <WinNumber>1</WinNumber>
+          <SubType>2</SubType>
+          <ItemText>0x200084A8</ItemText>
+        </Mm>
+      </MemoryWindow1>
+      <MemoryWindow2>
+        <Mm>
+          <WinNumber>2</WinNumber>
+          <SubType>2</SubType>
+          <ItemText>0x40002100</ItemText>
+        </Mm>
+      </MemoryWindow2>
+      <MemoryWindow3>
+        <Mm>
+          <WinNumber>3</WinNumber>
+          <SubType>2</SubType>
+          <ItemText>0x20000800</ItemText>
+        </Mm>
+      </MemoryWindow3>
+      <MemoryWindow4>
+        <Mm>
+          <WinNumber>4</WinNumber>
+          <SubType>2</SubType>
+          <ItemText>0x400F6110</ItemText>
+        </Mm>
+      </MemoryWindow4>
       <Tracepoint>
         <THDelay>0</THDelay>
       </Tracepoint>
@@ -458,12 +471,12 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>72</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>145</TopLine>
-      <CurrentLine>148</CurrentLine>
+      <TopLine>140</TopLine>
+      <CurrentLine>155</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\DeviceCode\USB\usb_config.cpp</PathWithFileName>
+      <PathWithFileName>..\..\DeviceCode\USBCDC\usb_config.cpp</PathWithFileName>
       <FilenameWithoutPath>usb_config.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -504,7 +517,7 @@
 
   <Group>
     <GroupName>Docs</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -530,10 +543,10 @@
       <FileType>2</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>19</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>15</TopLine>
-      <CurrentLine>33</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\TinyCLR.sct</PathWithFileName>
       <FilenameWithoutPath>TinyCLR.sct</FilenameWithoutPath>
@@ -544,7 +557,7 @@
 
   <Group>
     <GroupName>CLR-Core</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -632,7 +645,7 @@
       <GroupNumber>3</GroupNumber>
       <FileNumber>16</FileNumber>
       <FileType>8</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -1636,8 +1649,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>68</TopLine>
+      <CurrentLine>79</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\CLR\Debugger\Debugger.cpp</PathWithFileName>
       <FilenameWithoutPath>Debugger.cpp</FilenameWithoutPath>
@@ -3356,8 +3369,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>62</TopLine>
+      <CurrentLine>84</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_Usb\spot_hardware_usb_native_Microsoft_SPOT_Hardware_UsbClient_UsbController.cpp</PathWithFileName>
       <FilenameWithoutPath>spot_hardware_usb_native_Microsoft_SPOT_Hardware_UsbClient_UsbController.cpp</FilenameWithoutPath>
@@ -3372,8 +3385,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>93</TopLine>
+      <CurrentLine>112</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\CLR\Libraries\SPOT_Hardware\SPOT_Usb\spot_hardware_usb_native_Microsoft_SPOT_Hardware_UsbClient_UsbStream.cpp</PathWithFileName>
       <FilenameWithoutPath>spot_hardware_usb_native_Microsoft_SPOT_Hardware_UsbClient_UsbStream.cpp</FilenameWithoutPath>
@@ -3524,8 +3537,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>19</TopLine>
+      <CurrentLine>71</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\CLR\StartupLib\CLRStartup.cpp</PathWithFileName>
       <FilenameWithoutPath>CLRStartup.cpp</FilenameWithoutPath>
@@ -3538,10 +3551,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>52</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>525</TopLine>
+      <CurrentLine>528</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\CLR\Messaging\Messaging.cpp</PathWithFileName>
       <FilenameWithoutPath>Messaging.cpp</FilenameWithoutPath>
@@ -3692,8 +3705,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>339</TopLine>
+      <CurrentLine>361</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_GPIO\LPC43XX_GPIO.cpp</PathWithFileName>
       <FilenameWithoutPath>LPC43XX_GPIO.cpp</FilenameWithoutPath>
@@ -3756,7 +3769,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>50</TopLine>
+      <TopLine>48</TopLine>
       <CurrentLine>53</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_Power\LPC43XX_Power.cpp</PathWithFileName>
@@ -3786,10 +3799,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>52</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>211</TopLine>
+      <CurrentLine>233</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_SPI\LPC43XX_SPI.cpp</PathWithFileName>
       <FilenameWithoutPath>LPC43XX_SPI.cpp</FilenameWithoutPath>
@@ -3818,10 +3831,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>64</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>110</TopLine>
+      <CurrentLine>124</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_Time\LPC43XX_Time.cpp</PathWithFileName>
       <FilenameWithoutPath>LPC43XX_Time.cpp</FilenameWithoutPath>
@@ -3850,12 +3863,12 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>4</ColumnNumber>
+      <ColumnNumber>58</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>558</TopLine>
-      <CurrentLine>567</CurrentLine>
+      <TopLine>146</TopLine>
+      <CurrentLine>129</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_USB\LPC43XX_USB.cpp</PathWithFileName>
+      <PathWithFileName>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\LPC43XX_USBCDC\LPC43XX_USB.cpp</PathWithFileName>
       <FilenameWithoutPath>LPC43XX_USB.cpp</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -3892,8 +3905,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>236</TopLine>
+      <CurrentLine>252</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\DeviceCode\pal\COM\ComDirector.cpp</PathWithFileName>
       <FilenameWithoutPath>ComDirector.cpp</FilenameWithoutPath>
@@ -4308,8 +4321,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>104</TopLine>
+      <CurrentLine>123</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\DeviceCode\pal\tinycrt\tinycrt.cpp</PathWithFileName>
       <FilenameWithoutPath>tinycrt.cpp</FilenameWithoutPath>
@@ -4322,10 +4335,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>65</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>607</TopLine>
-      <CurrentLine>612</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\DeviceCode\pal\COM\usart\usart.cpp</PathWithFileName>
       <FilenameWithoutPath>usart.cpp</FilenameWithoutPath>
@@ -4338,10 +4351,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>17</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>1</TopLine>
+      <CurrentLine>14</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\DeviceCode\pal\COM\usb\usb.cpp</PathWithFileName>
       <FilenameWithoutPath>usb.cpp</FilenameWithoutPath>
@@ -4756,8 +4769,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>605</TopLine>
+      <CurrentLine>627</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\DeviceCode\Initialization\tinyhal.cpp</PathWithFileName>
       <FilenameWithoutPath>tinyhal.cpp</FilenameWithoutPath>
@@ -4808,7 +4821,7 @@
 
   <Group>
     <GroupName>Startup</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -4820,8 +4833,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>94</TopLine>
-      <CurrentLine>97</CurrentLine>
+      <TopLine>90</TopLine>
+      <CurrentLine>94</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\CortexM\TinyHal\RVD_S\FirstEntry.s</PathWithFileName>
       <FilenameWithoutPath>FirstEntry.s</FilenameWithoutPath>
@@ -4834,10 +4847,10 @@
       <FileType>2</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>10</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>1</TopLine>
+      <CurrentLine>19</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\DeviceCode\Targets\Native\LPC43XX\DeviceCode\CortexM\TinyHal\RVD_S\IDelayLoop.s</PathWithFileName>
       <FilenameWithoutPath>IDelayLoop.s</FilenameWithoutPath>
@@ -4924,8 +4937,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>151</TopLine>
+      <CurrentLine>164</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\Support\WireProtocol\WireProtocol.cpp</PathWithFileName>
       <FilenameWithoutPath>WireProtocol.cpp</FilenameWithoutPath>

@@ -70,20 +70,20 @@ static const PINMUX_GRP_T post_clock_mux[] = {
 void __section(SectionForBootstrapOperations) SystemInit(void)
 {
 #if !defined(CORE_M0)
-    unsigned int *pSCB_VTOR = (unsigned int *) 0xE000ED08;
 
+    /* Initialize vector table in flash */
 #if defined(__ARMCC_VERSION)
     extern void *__Vectors;
 
-    *pSCB_VTOR = (unsigned int) &__Vectors;
+    SCB->VTOR = (unsigned int) &__Vectors;
 #elif defined(__IAR_SYSTEMS_ICC__)
     extern void *__vector_table;
 
-    *pSCB_VTOR = (unsigned int) &__vector_table;
+    SCB->VTOR = (unsigned int) &__vector_table;
 #else /* defined(__GNUC__) and others */
     extern void *g_pfnVectors;
 
-    *pSCB_VTOR = (unsigned int) &g_pfnVectors;
+    SCB->VTOR = (unsigned int) &g_pfnVectors;
 #endif
 
 #if 0 // defined(__FPU_PRESENT) && __FPU_PRESENT == 1
