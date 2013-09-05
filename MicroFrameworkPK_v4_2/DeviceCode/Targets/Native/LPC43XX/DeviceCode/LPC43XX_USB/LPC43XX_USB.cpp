@@ -20,6 +20,7 @@
 
 #include <tinyhal.h>
 #include <pal\com\usb\USB.h>
+#include <WireProtocol.h> // for WP_Packet
 #include "LPC43XX.h"
 
 // Uses the USB stack in ROM on the LPC4350/30/20 and LPC185x/3x/2x.
@@ -93,8 +94,8 @@ ALIGNED(2048) static UINT8 usbrom_buff[MAX_USB_CORE][USBROM_MEM_SIZE];
 // Endpoint buffers
 ALIGNED(4) static UINT8 ep_out_data[MAX_USB_CORE][EP_MEM_SIZE];
 ALIGNED(4) static UINT8 ep_in_data[MAX_USB_CORE][EP_MEM_SIZE];
-ALIGNED(4) static UINT8 ep_out_count[MAX_USB_CORE];
-ALIGNED(4) static UINT8 ep_in_count[MAX_USB_CORE];
+ALIGNED(4) static UINT16 ep_out_count[MAX_USB_CORE];
+ALIGNED(4) static UINT16 ep_in_count[MAX_USB_CORE];
 
 // Copy of descriptors in AHBSRAM
 ALIGNED(4) static UINT8 USBROM_DeviceDescriptor[sizeof(USB_DeviceDescriptor)];
@@ -109,9 +110,9 @@ ALIGNED(4) static UINT8 USBROM_DeviceQualifier[sizeof(USB_DeviceQualifier)];
 // Local functions
 static ErrorCode_t USB_InitStack(int core);
 // USB device event callbacks
+static ErrorCode_t USB_Reset_Event_Handler(USBD_HANDLE_T hUsb);
 static ErrorCode_t USB_Suspend_Event_Handler(USBD_HANDLE_T hUsb);
 static ErrorCode_t USB_Resume_Event_Handler(USBD_HANDLE_T hUsb);
-static ErrorCode_t USB_Reset_Event_Handler(USBD_HANDLE_T hUsb);
 // USB endpoint event callbacks
 static ErrorCode_t USB_EP_In_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 event);
 static ErrorCode_t USB_EP_Out_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 event);
@@ -166,9 +167,8 @@ static ErrorCode_t USB_InitStack(int core)
 static ErrorCode_t USB_Suspend_Event_Handler(USBD_HANDLE_T hUsb)
 {
     int core = USB_CORE(hUsb);
-    USB_CONTROLLER_STATE *State;
+    USB_CONTROLLER_STATE *State = USB_STATE(core);
 
-    State = USB_STATE(core);
     USB_PREVSTAT(core) = State->DeviceState;
     State->DeviceState = USB_DEVICE_STATE_SUSPENDED;
     USB_StateCallback(State);
@@ -179,9 +179,8 @@ static ErrorCode_t USB_Suspend_Event_Handler(USBD_HANDLE_T hUsb)
 static ErrorCode_t USB_Resume_Event_Handler (USBD_HANDLE_T hUsb)
 {
     int core = USB_CORE(hUsb);
-    USB_CONTROLLER_STATE *State;
+    USB_CONTROLLER_STATE *State = USB_STATE(core);
 
-    State = USB_STATE(core);
     State->DeviceState = USB_PREVSTAT(core);
     USB_PREVSTAT(core) = 0;
     USB_StateCallback(State);
@@ -444,11 +443,14 @@ static ErrorCode_t USB_EP_Out_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 eve
 // Transmit buffer when handling data endpoint IN event (Tx -> Host IN)
 static ErrorCode_t USB_EP_In_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 event)
 {
-    // Handle IN events
+    // Exit if not an IN event
     if (event != USB_EVT_IN) return RET_UNHANDLED;
 
     int epNum = (int)data;
     int core = USB_CORE(hUsb);
+
+    // Exit if buffer empty
+    if (ep_in_count[core] == 0) return RET_UNHANDLED;
 
     // Send buffer
     USBD_WriteEP(hUsb, USB_ENDPOINT_IN(epNum), ep_in_data[core], ep_in_count[core]);
@@ -588,9 +590,9 @@ HRESULT CPU_USB_Initialize(int core)
     USBD_RegisterEpHandler(hUsb, USB_EP_INDEX_IN(BULK_IN_EP), USB_EP_In_Handler, (void*)BULK_IN_EP);
     USBD_RegisterEpHandler(hUsb, USB_EP_INDEX_OUT(BULK_OUT_EP), USB_EP_Out_Handler, (void*)BULK_OUT_EP);
 
-    // Enable interrupts and make soft connect
+    // Connect and enable interrupts
+    CPU_USB_ProtectPins(core, FALSE);
     CPU_INTC_ActivateInterrupt(USB_IRQ[core], USB_ISR[core], 0);
-    USBD_Connect(USB_HANDLE(core), 1); // Connect
     USB_ENABLED(core) = TRUE;
 #ifndef USE_USB_CUSTOM
     State->DeviceState = USB_DEVICE_STATE_CONFIGURED; // Config done by ROM stack
@@ -604,7 +606,8 @@ HRESULT CPU_USB_Uninitialize(int core)
 {
     if (core >= MAX_USB_CORE || !USB_ENABLED(core)) return S_FALSE;
 
-    // Make soft disconnect and disable interrupts
+    // Disconnect and disable interrupts
+    CPU_USB_ProtectPins(core, TRUE);
     USBD_Connect(USB_HANDLE(core), 0); // Disconnect
     CPU_INTC_DeactivateInterrupt(USB_IRQ[core]);
 
@@ -615,6 +618,9 @@ HRESULT CPU_USB_Uninitialize(int core)
         LPC_CREG->CREG0 |= (1 << 5);; // Disable USB0 PHY
         LPC_CGU->PLL[CGU_USB_PLL].PLL_CTRL |= 1; // Disable USB PLL
     }
+    //USB_REG(core)->USBCMD_D &= ~0x01;
+    //USB_REG(core)->USBCMD_D = 0x02; // Reset controller
+	//while (USB_REG(core)->USBCMD_D & 0x02) ;
     USB_STATE(core) = NULL;
     USB_ENABLED(core) = FALSE;
 
@@ -651,9 +657,27 @@ BOOL CPU_USB_StartOutput(USB_CONTROLLER_STATE* State, int epNum)
     int core = USB_CORE(hUsb);
     USB_PACKET64* Packet64;
     UINT8* dst = ep_in_data[core];
-    UINT16 cnt = 0;
+    UINT32 cnt = 0;
+
+    // Hold if buffer pending
+    if (ep_in_count[core] != 0) return FALSE;
+
+    // If payload missing, hold until flush to avoid host timeout at HS
+    Packet64 = USB_TxDequeue(State, epNum, FALSE);
+    if (Packet64->Size == sizeof(WP_Packet)
+            && ((memcmp(Packet64->Buffer, MARKER_DEBUGGER_V1, 7) == 0)
+                    || (memcmp(Packet64->Buffer, MARKER_PACKET_V1, 7) == 0)))
+    {
+        memcpy(dst, Packet64->Buffer, Packet64->Size);
+        int missing = ((WP_Packet*)dst)->m_size + sizeof(WP_Packet);
+        for (int i = 0; i < State->Queues[epNum]->NumberOfElements(); i++) {
+            missing -= (*State->Queues[epNum])[i]->Size;
+        }
+        if (missing != 0) return FALSE;
+    }
 
     // Copy packets to endpoint buffer
+    cnt = 0;
     while ((Packet64 = USB_TxDequeue(State, epNum, FALSE)) != NULL) // Peek
     {
         if ((cnt + Packet64->Size) > EP_MEM_SIZE) break;
@@ -698,6 +722,7 @@ BOOL CPU_USB_GetInterruptState()
 BOOL CPU_USB_ProtectPins(int core, BOOL On)
 {
     USB_CONTROLLER_STATE *State;
+    USBD_HANDLE_T hUsb = USB_HANDLE(core);
 
     GLOBAL_LOCK(irq);
 
@@ -713,12 +738,12 @@ BOOL CPU_USB_ProtectPins(int core, BOOL On)
                 State->Queues[epNum]->Initialize();
         }
         // Make soft disconnect and set detached state
-        USBD_Connect(USB_HANDLE(core), 0);
+        USBD_Connect(hUsb, 0); // Disconnect
         State->DeviceState = USB_DEVICE_STATE_DETACHED;
         USB_StateCallback(State);
     } else {
         // Make soft connect and set attached state
-        USBD_Connect(USB_HANDLE(core), 1); // Connect
+        USBD_Connect(hUsb, 1); // Connect
         State->DeviceState = USB_DEVICE_STATE_ATTACHED;
         USB_StateCallback(State);
     }

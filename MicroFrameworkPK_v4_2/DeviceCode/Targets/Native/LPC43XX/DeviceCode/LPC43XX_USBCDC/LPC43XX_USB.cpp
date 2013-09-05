@@ -84,7 +84,7 @@ Hal_Queue_KnownSize<USB_PACKET64,USB_QUEUE_PACKET_COUNT> QueueBuffers[USB_MAX_EP
 
 #define USBROM_MEM_SIZE (4 * 1024)
 #define CDC_MEM_SIZE    (2 * 1024)
-#define EP_MEM_SIZE     (1024)
+#define EP_MEM_SIZE     (2 * 1024)
 
 ALIGNED(2048) static UINT8 usbrom_buff[MAX_USB_CORE][USBROM_MEM_SIZE];
 ALIGNED(1024) static UINT8 cdc_buff[MAX_USB_CORE][CDC_MEM_SIZE];
@@ -109,8 +109,6 @@ ALIGNED(4) static UINT8 USBROM_DeviceQualifier[sizeof(USB_DeviceQualifier)];
 static ErrorCode_t USB_InitStack(int core);
 // USB device event callbacks
 static ErrorCode_t USB_Reset_Event_Handler(USBD_HANDLE_T hUsb);
-static ErrorCode_t USB_Suspend_Event_Handler(USBD_HANDLE_T hUsb);
-static ErrorCode_t USB_Resume_Event_Handler(USBD_HANDLE_T hUsb);
 // USB endpoint event callbacks
 static ErrorCode_t USB_EP_In_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 event);
 static ErrorCode_t USB_EP_Out_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 event);
@@ -139,8 +137,6 @@ static ErrorCode_t USB_InitStack(int core)
     usb_param.mem_base = (UINT32)&usbrom_buff[core];
     usb_param.mem_size = USBROM_MEM_SIZE;
     // Configure USB callbacks
-    usb_param.USB_Suspend_Event = USB_Suspend_Event_Handler;
-    usb_param.USB_Resume_Event = USB_Resume_Event_Handler;
     usb_param.USB_Reset_Event = USB_Reset_Event_Handler;
 
     // Configure stack with initial device, configuration and string descriptors
@@ -238,30 +234,6 @@ static ErrorCode_t CDC_SetLineCode(USBD_HANDLE_T hCDC, CDC_LINE_CODING *lineCodi
 }
 
 // ---------------------------------------------------------------------------
-static ErrorCode_t USB_Suspend_Event_Handler(USBD_HANDLE_T hUsb)
-{
-    int core = USB_CORE(hUsb);
-    USB_CONTROLLER_STATE *State = USB_STATE(core);
-
-    USB_PREVSTAT(core) = State->DeviceState;
-    State->DeviceState = USB_DEVICE_STATE_SUSPENDED;
-    USB_StateCallback(State);
-    return RET_OK;
-}
-
-// ---------------------------------------------------------------------------
-static ErrorCode_t USB_Resume_Event_Handler (USBD_HANDLE_T hUsb)
-{
-    int core = USB_CORE(hUsb);
-    USB_CONTROLLER_STATE *State = USB_STATE(core);
-
-    State->DeviceState = USB_PREVSTAT(core);
-    USB_PREVSTAT(core) = 0;
-    USB_StateCallback(State);
-    return RET_OK;
-}
-
-// ---------------------------------------------------------------------------
 static ErrorCode_t USB_Reset_Event_Handler(USBD_HANDLE_T hUsb)
 {
     int core = USB_CORE(hUsb);
@@ -271,9 +243,9 @@ static ErrorCode_t USB_Reset_Event_Handler(USBD_HANDLE_T hUsb)
     USB_ClearEvent(0, USB_EVENT_ALL);
 
     State->FirstGetDescriptor = TRUE;
+    //State->Address = 0;
     //State->DeviceState = USB_DEVICE_STATE_DEFAULT;
-    State->Address = 0;
-    USB_StateCallback(State);
+    //USB_StateCallback(State);
     USB_FLAGS(core) = 0;
 
     // Reset endpoints
@@ -319,7 +291,7 @@ static ErrorCode_t USB_EP_Out_Handler(USBD_HANDLE_T hUsb, void* data, UINT32 eve
                 {
                     Packet64->Size = len;
                     memcpy(Packet64->Buffer, ep_out_data[core], Packet64->Size);
-                    Events_Set(SYSTEM_EVENT_FLAG_USB_IN);
+                    //Events_Set(SYSTEM_EVENT_FLAG_USB_IN);
                 }
                 //if (full) USBD_DisableEP(hUsb, USB_ENDPOINT_OUT(epNum));
             }
@@ -367,8 +339,7 @@ void USB1_IRQHandler(void* param)
 // ---------------------------------------------------------------------------
 HRESULT CPU_USB_Initialize(int core)
 {
-    //if (core >= MAX_USB_CORE || USB_ENABLED(core)) return S_FALSE;
-    if (core >= MAX_USB_CORE) return S_FALSE; // Keep serial port open with CDC driver
+    if (core >= MAX_USB_CORE || USB_ENABLED(core)) return S_FALSE;
 
     USB_CONTROLLER_STATE *State = CPU_USB_GetState(core);
     const USB_ENDPOINT_DESCRIPTOR  *pEpDesc;
@@ -454,6 +425,7 @@ HRESULT CPU_USB_Initialize(int core)
     CPU_INTC_ActivateInterrupt(USB_IRQ[core], USB_ISR[core], 0);
     USB_ENABLED(core) = TRUE;
     State->DeviceState = USB_DEVICE_STATE_CONFIGURED; // Config done by ROM stack
+    USB_StateCallback(State);
 
     return S_OK;
 }
@@ -463,25 +435,9 @@ HRESULT CPU_USB_Uninitialize(int core)
 {
     if (core >= MAX_USB_CORE || !USB_ENABLED(core)) return S_FALSE;
 
-#if 0 // Keep serial port open with CDC driver
-    // Disconnect and disable interrupts
-    CPU_USB_ProtectPins(core, TRUE);
-    USBD_Connect(USB_HANDLE(core), 0); // Disconnect
-    CPU_INTC_DeactivateInterrupt(USB_IRQ[core]);
+    // With CDC driver should keep COM port open, don't unitialize
 
-    // Uninitialize physical layer
-    LPC_CGU->BASE_CLK[USB_CLK[core]] |= 1;  // Disable USBx base clock
-    if (USB_ENABLED(1 - core))  // No other USB controllers enabled?
-    {
-        LPC_CREG->CREG0 |= (1 << 5);; // Disable USB0 PHY
-        LPC_CGU->PLL[CGU_USB_PLL].PLL_CTRL |= 1; // Disable USB PLL
-    }
-    USB_REG(core)->USBCMD_D &= ~0x01;
-    USB_REG(core)->USBCMD_D = 0x02; // Reset controller
-	while (USB_REG(core)->USBCMD_D & 0x02) ;
-    USB_STATE(core) = NULL;
     USB_ENABLED(core) = FALSE;
-#endif
 
     return S_OK;
 }
@@ -596,10 +552,12 @@ BOOL CPU_USB_ProtectPins(int core, BOOL On)
             if (State->Queues[epNum] != NULL && State->IsTxQueue[epNum])
                 State->Queues[epNum]->Initialize();
         }
+#if 0 // Don't disconnect on CDC
         // Make soft disconnect and set detached state
         USBD_Connect(hUsb, 0); // Disconnect
         State->DeviceState = USB_DEVICE_STATE_DETACHED;
         USB_StateCallback(State);
+#endif
     } else {
         // Make soft connect and set attached state
         USBD_Connect(hUsb, 1); // Connect
